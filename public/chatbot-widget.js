@@ -406,8 +406,8 @@
     
       .chatbot-toggle-button{
           position: relative;
-          bottom: 81px;
-          right: 62px;
+          bottom: 10px;
+          right: 10px;
           padding: 12px;
           font-size: 13px;
         }
@@ -431,8 +431,8 @@
 
         .chatbot-toggle-button{
           position: relative;
-          bottom: 92px;
-          right: 30px;
+          bottom: 10px;
+          right: 10px;
           padding: 12px;
           font-size: 13px;
         }
