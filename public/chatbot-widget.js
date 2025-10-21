@@ -1,44 +1,27 @@
 (function() {
   'use strict';
 
-  // Configuration
-  const CONFIG = {
-    position: 'bottom-right',
-    theme: 'light',
-    primaryColor: '#103FE5',
-    textColor: '#333',
-    backgroundColor: '#fff',
-    borderRadius: '50px',
-    width: '440px',
-    height: '713px',
-    zIndex: 1000
-  };
-
-  // Widget state
   let isOpen = false;
   let messages = [];
   let widgetContainer = null;
-  let chatContainer = null;
-  let inputElement = null;
 
-  // Create widget HTML structure
   function createWidgetHTML() {
     return `
       <div id="chatbot-widget-container" style="
         position: fixed;
-        ${CONFIG.position.includes('bottom') ? 'bottom: 20px;' : 'top: 20px;'}
-        ${CONFIG.position.includes('right') ? 'right: 20px;' : 'left: 20px;'}
-        z-index: ${CONFIG.zIndex};
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 14px;
         line-height: 1.4;
       ">
         <!-- Chat Window -->
         <div id="chatbot-window" class="chatbot-container" style="
-          width: ${CONFIG.width};
-          height: ${CONFIG.height};
-          background-color: ${CONFIG.backgroundColor};
-          border-radius: ${CONFIG.borderRadius};
+          width: 440px;
+          height: 713px;
+          background-color: #ffffff;
+          border-radius: 50px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
           display: none;
           flex-direction: column;
@@ -175,14 +158,14 @@
         <!-- Toggle Button -->
         <div id="chatbot-toggle" class="chatbot-toggle-button" style="
           position: fixed;
-          bottom: 81px;
-          right: 62px;
+          bottom: 20px;
+          right: 20px;
           background-color: #103FE5;
           color: white;
           border-radius: 24px;
           cursor: pointer;
           padding: 12px;
-          font-size: 13px;
+          font-size: 16px;
           font-weight: 800;
           display: flex;
           align-items: center;
@@ -190,7 +173,6 @@
           box-shadow: 0 4px 20px rgba(16, 63, 229, 0.3);
           transition: transform 0.2s ease;
           z-index: 1000;
-          position: relative;
         ">
           <span class="toggle-text">Questions?</span>
           <svg class="toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -405,11 +387,11 @@
       }
     
       .chatbot-toggle-button{
-          position: relative;
-          bottom: 10px;
-          right: 10px;
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
           padding: 12px;
-          font-size: 13px;
+          font-size: 16px;
         }
       .toggle-icon {
         display: none;
@@ -430,11 +412,11 @@
         }
 
         .chatbot-toggle-button{
-          position: relative;
-          bottom: 10px;
-          right: 10px;
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
           padding: 12px;
-          font-size: 13px;
+          font-size: 16px;
         }
         
         .toggle-text {
@@ -458,22 +440,13 @@
     document.head.appendChild(style);
   }
 
-  // Configuration API
   window.ChatbotWidget = {
-    init: function(options = {}) {
-      // Merge user options with default config
-      Object.assign(CONFIG, options);
-      
-      // Initialize widget when DOM is ready
+    init: function() {
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initWidget);
       } else {
         initWidget();
       }
-    },
-    
-    config: function(options) {
-      Object.assign(CONFIG, options);
     },
     
     open: function() {
@@ -489,18 +462,9 @@
     }
   };
 
-  // Auto-initialize if script has data attributes
   const script = document.currentScript;
   if (script && script.dataset.autoInit !== 'false') {
-    const options = {};
-    
-    if (script.dataset.position) options.position = script.dataset.position;
-    if (script.dataset.theme) options.theme = script.dataset.theme;
-    if (script.dataset.primaryColor) options.primaryColor = script.dataset.primaryColor;
-    if (script.dataset.width) options.width = script.dataset.width;
-    if (script.dataset.height) options.height = script.dataset.height;
-    
-    window.ChatbotWidget.init(options);
+    window.ChatbotWidget.init();
   }
 
 })();
