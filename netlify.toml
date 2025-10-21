@@ -1,0 +1,23 @@
+# Netlify Configuration
+# This file configures Netlify to serve static files
+
+[build]
+  publish = "public"
+  command = "echo 'No build step needed for static files'"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Redirect rules
+[[redirects]]
+  from = "/"
+  to = "/demo.html"
+  status = 200
