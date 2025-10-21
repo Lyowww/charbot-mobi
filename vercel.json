@@ -1,6 +1,3 @@
-# Vercel Configuration
-# This file configures Vercel to serve static files from the public directory
-
 {
   "version": 2,
   "builds": [
