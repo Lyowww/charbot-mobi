@@ -18,8 +18,8 @@
       ">
         <!-- Chat Window -->
         <div id="chatbot-window" class="chatbot-container" style="
-          width: 440px;
-          height: 713px;
+          width: 378px;
+          height: 613px;
           background-color: #ffffff;
           border-radius: 50px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -388,8 +388,8 @@
       }
       
       .chatbot-container {
-        width: 440px;
-        height: 713px;
+        width: 378px;
+        height: 613px;
       }
       
       .chatbot-container.mobile {
@@ -507,14 +507,14 @@
       
       toggle.classList.add('mobile');
     } else {
-      // Desktop - 440px width, 713px height
+      // Desktop - 378px width, 613px height
       chatWindow.classList.remove('mobile');
       // container.style.top = '50%';
       container.style.left = 'auto';
       container.style.right = '20px';
       container.style.transform = 'translateY(-100%)';
-      chatWindow.style.width = '440px';
-      chatWindow.style.height = '713px';
+      chatWindow.style.width = '378px';
+      chatWindow.style.height = '613px';
       toggle.classList.remove('mobile');
     }
   }
