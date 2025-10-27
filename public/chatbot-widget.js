@@ -9,8 +9,9 @@
     return `
       <div id="chatbot-widget-container" style="
         position: fixed;
-        top: 300px;
+        top: 50%;
         right: 20px;
+        transform: translateY(-50%);
         z-index: 1000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 14px;
@@ -19,7 +20,7 @@
         <!-- Chat Window -->
         <div id="chatbot-window" class="chatbot-container" style="
           width: 440px;
-          height: calc(100vh - 320px);
+          height: 713px;
           background-color: #ffffff;
           border-radius: 50px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -389,7 +390,7 @@
       
       .chatbot-container {
         width: 440px;
-        height: calc(100vh - 320px);
+        height: 713px;
       }
       
       .chatbot-container.mobile {
@@ -434,11 +435,12 @@
         display: block !important;
       }
       
-      @media (max-width: 480px) {
+      @media (max-width: 1024px) {
         #chatbot-widget-container {
-          top: 120px !important;
-          right: 0 !important;
-          left: 0 !important;
+          left: 50% !important;
+          top: 50% !important;
+          right: auto !important;
+          transform: translate(-50%, -50%) !important;
         }
         
         .chatbot-toggle-button{
@@ -470,10 +472,9 @@
     document.head.appendChild(style);
   }
 
-  // Detect mobile device
+  // Detect mobile device based on screen width
   function isMobileDevice() {
-    return window.innerWidth <= 480 || 
-           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return window.innerWidth <= 1024;
   }
 
   // Apply mobile styles
@@ -485,21 +486,26 @@
     if (!chatWindow || !toggle || !container) return;
     
     if (isMobileDevice()) {
-      // Mobile - 120px from top
+      // Mobile - full width, 550px height
       chatWindow.classList.add('mobile');
-      container.style.top = '120px';
-      container.style.right = '0';
-      container.style.left = '0';
+      container.style.top = '50%';
+      container.style.left = '50%';
+      container.style.transform = 'translate(-50%, -50%)';
+      container.style.right = 'auto';
       chatWindow.style.width = '100vw';
-      chatWindow.style.height = 'calc(100vh - 140px)';
+      chatWindow.style.height = '550px';
+      chatWindow.style.maxHeight = '100vh';
       chatWindow.style.borderRadius = '0';
       toggle.classList.add('mobile');
     } else {
-      // Desktop - 300px from top
+      // Desktop - 440px width, 713px height
       chatWindow.classList.remove('mobile');
-      container.style.top = '300px';
-      container.style.right = '20px';
+      container.style.top = '50%';
       container.style.left = 'auto';
+      container.style.right = '20px';
+      container.style.transform = 'translateY(-50%)';
+      chatWindow.style.width = '440px';
+      chatWindow.style.height = '713px';
       toggle.classList.remove('mobile');
     }
   }
