@@ -443,12 +443,21 @@
           transform: translate(-50%, -50%) !important;
         }
         
-        .chatbot-toggle-button{
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
+      #chatbot-window.mobile {
+        border-radius: 50px 50px 0 0 !important;
+      }
+      
+      #chatbot-window.mobile > div:first-child {
+        border-radius: 50px 50px 0 0 !important;
+      }
+      
+      .chatbot-toggle-button{
+          position: fixed !important;
+          bottom: 20px !important;
+          right: 20px !important;
           padding: 12px;
           font-size: 16px;
+          z-index: 10001;
         }
         
         .toggle-text {
@@ -486,7 +495,7 @@
     if (!chatWindow || !toggle || !container) return;
     
     if (isMobileDevice()) {
-      // Mobile - full width, 550px height
+      // Mobile - full width, 550px height, rounded top corners
       chatWindow.classList.add('mobile');
       container.style.top = '50%';
       container.style.left = '50%';
@@ -495,7 +504,14 @@
       chatWindow.style.width = '100vw';
       chatWindow.style.height = '550px';
       chatWindow.style.maxHeight = '100vh';
-      chatWindow.style.borderRadius = '0';
+      chatWindow.style.borderRadius = '50px 50px 0 0';
+      
+      // Update header border-radius for mobile
+      const header = chatWindow.querySelector('div > div');
+      if (header) {
+        header.style.borderRadius = '50px 50px 0 0';
+      }
+      
       toggle.classList.add('mobile');
     } else {
       // Desktop - 440px width, 713px height
