@@ -9,6 +9,7 @@
     return `
       <div id="chatbot-widget-container" style="
         position: fixed;
+        top: 300px;
         right: 20px;
         z-index: 1000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -18,7 +19,7 @@
         <!-- Chat Window -->
         <div id="chatbot-window" class="chatbot-container" style="
           width: 440px;
-          height: 713px;
+          height: calc(100vh - 320px);
           background-color: #ffffff;
           border-radius: 50px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -388,7 +389,7 @@
       
       .chatbot-container {
         width: 440px;
-        height: 713px;
+        height: calc(100vh - 320px);
       }
       
       .chatbot-container.mobile {
@@ -434,15 +435,12 @@
       }
       
       @media (max-width: 480px) {
-        .chatbot-container {
-          width: 100vw !important;
-          height: calc(100vh - 140px) !important;
-          max-height: calc(100vh - 140px) !important;
-          border-radius: 0 !important;
+        #chatbot-widget-container {
           top: 120px !important;
+          right: 0 !important;
           left: 0 !important;
         }
-
+        
         .chatbot-toggle-button{
           position: fixed;
           bottom: 20px;
@@ -484,46 +482,25 @@
     const toggle = document.getElementById('chatbot-toggle');
     const container = document.getElementById('chatbot-widget-container');
     
+    if (!chatWindow || !toggle || !container) return;
+    
     if (isMobileDevice()) {
-      if (chatWindow) {
-        chatWindow.classList.add('mobile');
-        // Override inline styles for mobile - 120px from top
-        chatWindow.style.width = '100vw';
-        chatWindow.style.height = 'calc(100vh - 140px)'; // 120px top + 20px bottom
-        chatWindow.style.maxHeight = 'calc(100vh - 140px)';
-        chatWindow.style.borderRadius = '0';
-        chatWindow.style.top = '120px';
-        chatWindow.style.left = '0';
-        chatWindow.style.bottom = 'auto';
-        chatWindow.style.right = 'auto';
-      }
-      
-      if (container) {
-        container.style.right = '0';
-      }
-      
-      if (toggle) {
-        toggle.classList.add('mobile');
-      }
+      // Mobile - 120px from top
+      chatWindow.classList.add('mobile');
+      container.style.top = '120px';
+      container.style.right = '0';
+      container.style.left = '0';
+      chatWindow.style.width = '100vw';
+      chatWindow.style.height = 'calc(100vh - 140px)';
+      chatWindow.style.borderRadius = '0';
+      toggle.classList.add('mobile');
     } else {
       // Desktop - 300px from top
-      if (chatWindow) {
-        chatWindow.classList.remove('mobile');
-        chatWindow.style.width = '440px';
-        chatWindow.style.height = 'calc(100vh - 320px)'; // 300px top + 20px bottom
-        chatWindow.style.borderRadius = '50px';
-        chatWindow.style.top = '300px';
-        chatWindow.style.bottom = 'auto';
-        chatWindow.style.left = 'auto';
-      }
-      
-      if (container) {
-        container.style.right = '20px';
-      }
-      
-      if (toggle) {
-        toggle.classList.remove('mobile');
-      }
+      chatWindow.classList.remove('mobile');
+      container.style.top = '300px';
+      container.style.right = '20px';
+      container.style.left = 'auto';
+      toggle.classList.remove('mobile');
     }
   }
 
