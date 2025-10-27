@@ -491,9 +491,9 @@
       // Mobile - full width, 550px height, rounded top corners
       chatWindow.classList.add('mobile');
       // container.style.top = '50%';
-      container.style.left = '50%';
+      // container.style.left = '50%';
       // container.style.transform = 'translate(-50%, -50%)';
-      container.style.right = 'auto';
+      container.style.right = '0';
       chatWindow.style.width = '100vw';
       chatWindow.style.height = '550px';
       chatWindow.style.maxHeight = '100vh';
