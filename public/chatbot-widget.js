@@ -435,13 +435,7 @@
       }
       
       @media (max-width: 1024px) {
-        #chatbot-widget-container {
-          left: 50% !important;
-          top: 50% !important;
-          right: auto !important;
-          transform: translate(-50%, -50%) !important;
-        }
-        
+
       #chatbot-window.mobile {
         border-radius: 50px 50px 0 0 !important;
       }
