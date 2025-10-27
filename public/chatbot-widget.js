@@ -10,7 +10,7 @@
       <div id="chatbot-widget-container" style="
         position: fixed;
         right: 20px;
-        transform: translateY(-50%);
+        transform: translateY(-100%);
         z-index: 1000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 14px;
@@ -512,7 +512,7 @@
       // container.style.top = '50%';
       container.style.left = 'auto';
       container.style.right = '20px';
-      container.style.transform = 'translateY(-50%)';
+      container.style.transform = 'translateY(-100%)';
       chatWindow.style.width = '440px';
       chatWindow.style.height = '713px';
       toggle.classList.remove('mobile');
