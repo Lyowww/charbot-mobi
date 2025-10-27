@@ -490,9 +490,9 @@
     if (isMobileDevice()) {
       // Mobile - full width, 550px height, rounded top corners
       chatWindow.classList.add('mobile');
-      container.style.top = '50%';
+      // container.style.top = '50%';
       container.style.left = '50%';
-      container.style.transform = 'translate(-50%, -50%)';
+      // container.style.transform = 'translate(-50%, -50%)';
       container.style.right = 'auto';
       chatWindow.style.width = '100vw';
       chatWindow.style.height = '550px';
@@ -509,7 +509,7 @@
     } else {
       // Desktop - 440px width, 713px height
       chatWindow.classList.remove('mobile');
-      container.style.top = '50%';
+      // container.style.top = '50%';
       container.style.left = 'auto';
       container.style.right = '20px';
       container.style.transform = 'translateY(-50%)';
