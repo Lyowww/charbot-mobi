@@ -9,7 +9,6 @@
     return `
       <div id="chatbot-widget-container" style="
         position: fixed;
-        bottom: 20px;
         right: 20px;
         z-index: 1000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -308,18 +307,18 @@
 
   // Toggle chat visibility
   function toggleChat() {
-    const window = document.getElementById('chatbot-window');
+    const chatWindow = document.getElementById('chatbot-window');
     const toggle = document.getElementById('chatbot-toggle');
     
-    if (!window || !toggle) return;
+    if (!chatWindow || !toggle) return;
 
     isOpen = !isOpen;
     
     if (isOpen) {
-      window.style.display = 'flex';
+      chatWindow.style.display = 'flex';
       toggle.style.display = 'none';
     } else {
-      window.style.display = 'none';
+      chatWindow.style.display = 'none';
       toggle.style.display = 'flex';
     }
   }
@@ -364,6 +363,12 @@
         this.style.transform = 'scale(1)';
       });
     }
+
+    // Apply mobile styles
+    applyMobileStyles();
+    
+    // Apply mobile styles on resize
+    window.addEventListener('resize', applyMobileStyles);
   }
 
   // Add CSS styles for animations and responsive design
@@ -385,6 +390,10 @@
         width: 440px;
         height: 713px;
       }
+      
+      .chatbot-container.mobile {
+        /* Mobile styles applied via JavaScript */
+      }
     
       .chatbot-toggle-button{
           position: fixed;
@@ -393,22 +402,45 @@
           padding: 12px;
           font-size: 16px;
         }
+        
+      .chatbot-toggle-button.mobile {
+        padding: 12px;
+      }
+      
       .toggle-icon {
         display: none;
       }
-        .status-dot1 {
-          display: none;
-        }
+      
+      .status-dot1 {
+        display: none;
+      }
+      
+      .mobile .toggle-text {
+        display: none !important;
+      }
+      
+      .mobile .toggle-icon {
+        display: block !important;
+        width: 24px;
+        height: 24px;
+      }
+      
+      .mobile .status-dot2 {
+        display: none;
+      }
+      
+      .mobile .status-dot1{
+        display: block !important;
+      }
       
       @media (max-width: 480px) {
         .chatbot-container {
-          width: 100vw;
-          height: 85vh;
-          max-height: 100vh;
-          bottom: 0;
-          right: 0;
-          left: 0;
-          border-radius: 0;
+          width: 100vw !important;
+          height: calc(100vh - 140px) !important;
+          max-height: calc(100vh - 140px) !important;
+          border-radius: 0 !important;
+          top: 120px !important;
+          left: 0 !important;
         }
 
         .chatbot-toggle-button{
@@ -438,6 +470,61 @@
       }
     `;
     document.head.appendChild(style);
+  }
+
+  // Detect mobile device
+  function isMobileDevice() {
+    return window.innerWidth <= 480 || 
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  // Apply mobile styles
+  function applyMobileStyles() {
+    const chatWindow = document.getElementById('chatbot-window');
+    const toggle = document.getElementById('chatbot-toggle');
+    const container = document.getElementById('chatbot-widget-container');
+    
+    if (isMobileDevice()) {
+      if (chatWindow) {
+        chatWindow.classList.add('mobile');
+        // Override inline styles for mobile - 120px from top
+        chatWindow.style.width = '100vw';
+        chatWindow.style.height = 'calc(100vh - 140px)'; // 120px top + 20px bottom
+        chatWindow.style.maxHeight = 'calc(100vh - 140px)';
+        chatWindow.style.borderRadius = '0';
+        chatWindow.style.top = '120px';
+        chatWindow.style.left = '0';
+        chatWindow.style.bottom = 'auto';
+        chatWindow.style.right = 'auto';
+      }
+      
+      if (container) {
+        container.style.right = '0';
+      }
+      
+      if (toggle) {
+        toggle.classList.add('mobile');
+      }
+    } else {
+      // Desktop - 300px from top
+      if (chatWindow) {
+        chatWindow.classList.remove('mobile');
+        chatWindow.style.width = '440px';
+        chatWindow.style.height = 'calc(100vh - 320px)'; // 300px top + 20px bottom
+        chatWindow.style.borderRadius = '50px';
+        chatWindow.style.top = '300px';
+        chatWindow.style.bottom = 'auto';
+        chatWindow.style.left = 'auto';
+      }
+      
+      if (container) {
+        container.style.right = '20px';
+      }
+      
+      if (toggle) {
+        toggle.classList.remove('mobile');
+      }
+    }
   }
 
   window.ChatbotWidget = {
