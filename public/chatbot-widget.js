@@ -125,7 +125,7 @@
                   flex: 1;
                   padding: 12px 16px;
                   outline: none;
-                  font-size: 14px;
+                  font-size: 16px;
                   color: black;
                   border: none;
                 "
