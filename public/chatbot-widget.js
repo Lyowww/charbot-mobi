@@ -158,7 +158,7 @@
         <!-- Toggle Button -->
         <div id="chatbot-toggle" class="chatbot-toggle-button" style="
           position: fixed;
-          bottom: 20px;
+          bottom: 30px;
           right: 20px;
           background-color: #103FE5;
           color: white;
@@ -404,7 +404,7 @@
     
       .chatbot-toggle-button{
           position: fixed;
-          bottom: 20px;
+          bottom: 30px;
           right: 20px;
           padding: 12px;
           font-size: 16px;
@@ -452,7 +452,7 @@
       
       .chatbot-toggle-button{
           position: fixed !important;
-          bottom: 20px !important;
+          bottom: 30px !important;
           right: 20px !important;
           padding: 12px;
           font-size: 16px;
