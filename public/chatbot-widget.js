@@ -1,9 +1,14 @@
-(function() {
+(function () {
   'use strict';
 
   let isOpen = false;
   let messages = [];
   let widgetContainer = null;
+  let chatKey = null;
+  let chatUrl = null;
+  let currentHistory = [];
+  let currentPage = 1;
+  let isLoadingHistory = false;
 
   function createWidgetHTML() {
     return `
@@ -158,7 +163,7 @@
         <!-- Toggle Button -->
         <div id="chatbot-toggle" class="chatbot-toggle-button" style="
           position: fixed;
-          bottom: 30px;
+          bottom: 20px;
           right: 20px;
           background-color: #103FE5;
           color: white;
@@ -201,7 +206,7 @@
   }
 
   // Add message to chat
-  function addMessage(text, sender = 'bot') {
+  function addMessage(text, sender = 'bot', pushToArray = true) {
     const messagesContainer = document.getElementById('chatbot-messages');
     if (!messagesContainer) return;
 
@@ -223,15 +228,29 @@
       word-wrap: break-word;
     `;
     messageDiv.textContent = text;
-    
+
     messageWrapper.appendChild(messageDiv);
     messagesContainer.appendChild(messageWrapper);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
-    messages.push({ text, sender });
+    // Scroll to bottom after adding message
+    setTimeout(() => {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 100);
+
+    if (pushToArray) {
+      messages.push({ text, sender });
+    }
   }
 
-  // Show typing indicator
+  function scrollToBottom() {
+    const messagesContainer = document.getElementById('chatbot-messages');
+    if (messagesContainer) {
+      setTimeout(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 150);
+    }
+  }
+
   function showTypingIndicator() {
     const messagesContainer = document.getElementById('chatbot-messages');
     if (!messagesContainer) return;
@@ -279,7 +298,6 @@
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-  // Hide typing indicator
   function hideTypingIndicator() {
     const typingIndicator = document.getElementById('typing-indicator');
     if (typingIndicator) {
@@ -287,8 +305,7 @@
     }
   }
 
-  // Handle user input
-  function handleUserInput() {
+  async function handleUserInput() {
     const input = document.getElementById('chatbot-input');
     if (!input || !input.value.trim()) return;
 
@@ -296,49 +313,346 @@
     addMessage(userMessage, 'user');
     input.value = '';
 
-    // Show typing indicator
     showTypingIndicator();
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      const storedChatInfo = getStoredChatInfo();
+
+      if (!storedChatInfo || !storedChatInfo.chat_info || !storedChatInfo.property_info) {
+        hideTypingIndicator();
+        addMessage('Sorry, chat session not initialized properly.', 'bot');
+        return;
+      }
+
+      const chatToken = storedChatInfo.chat_info.token;
+      const propertyId = storedChatInfo.property_info.property_id;
+      const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
+      const sessionId = storedChatInfo.chat_info.session_id;
+
+      const requestBody = {
+        languageCode: 'en',
+        query: userMessage,
+        audio: false,
+        property_id: propertyId,
+        session_id: sessionId
+      };
+
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      if (chatToken) {
+        headers['x-chat-token'] = chatToken;
+      }
+      const response = await fetch('https://moby-api.rocketsystems.net/api/v2/chat/send', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestBody)
+      });
+
+      const result = await response.json();
+      console.log('Send message result:', result);
+
       hideTypingIndicator();
-      addMessage('Thanks for your message! How else can I assist you?', 'bot');
-    }, 1500);
+
+      if (result && result.data && result.data.messages && result.data.messages.text) {
+        addMessage(result.data.messages.text, 'bot');
+      } else {
+        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      hideTypingIndicator();
+      addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+    }
   }
 
-  // Toggle chat visibility
   function toggleChat() {
     const chatWindow = document.getElementById('chatbot-window');
     const toggle = document.getElementById('chatbot-toggle');
-    
+    console.log('Chat ID:', chatKey);
+    console.log('Chat Url:', chatUrl);
     if (!chatWindow || !toggle) return;
 
     isOpen = !isOpen;
-    
+
     if (isOpen) {
       chatWindow.style.display = 'flex';
       toggle.style.display = 'none';
+      // Scroll to bottom after opening chat
+      scrollToBottom();
     } else {
       chatWindow.style.display = 'none';
       toggle.style.display = 'flex';
     }
   }
 
-  // Initialize widget
+  function initializechatKey() {
+    let script = document.currentScript;
+    if (!script) {
+      const scripts = document.querySelectorAll('script');
+      for (let i = scripts.length - 1; i >= 0; i--) {
+        const src = scripts[i].getAttribute('src');
+        if (src && (src.includes('chatbot-widget.js') || src.includes('widget'))) {
+          script = scripts[i];
+          break;
+        }
+      }
+    }
+
+
+    if (script) {
+      chatUrl = script.getAttribute('chat_url') || null;
+      chatKey = chatUrl.split('/').pop();
+    }
+
+    if (chatKey) {
+      const currentOrigin = window.location.origin;
+
+      const websitesKey = 'chatbot_websites_' + chatKey;
+      const existingWebsites = localStorage.getItem(websitesKey);
+      let websites = existingWebsites ? JSON.parse(existingWebsites) : [];
+
+      if (!websites.includes(currentOrigin)) {
+        websites.push(currentOrigin);
+      }
+
+      localStorage.setItem(websitesKey, JSON.stringify(websites));
+      localStorage.setItem('chatbot_current_chatKey', chatKey);
+
+      const timestampKey = 'chatbot_timestamp_' + chatKey + '_' + currentOrigin.replace(/[^a-zA-Z0-9]/g, '_');
+      localStorage.setItem(timestampKey, new Date().toISOString());
+
+      localStorage.setItem('chatbot_chatKey_' + chatKey, currentOrigin);
+    }
+  }
+
+  function getchatKey() {
+    return chatKey || localStorage.getItem('chatbot_current_chatKey');
+  }
+
+  function getWebsitesForchatKey(customchatKey) {
+    const chatKeyToUse = customchatKey || chatKey;
+    if (!chatKeyToUse) return [];
+
+    const websitesKey = 'chatbot_websites_' + chatKeyToUse;
+    const storedWebsites = localStorage.getItem(websitesKey);
+    return storedWebsites ? JSON.parse(storedWebsites) : [];
+  }
+
+  function getOrCreateDeviceId() {
+    const deviceIdKey = 'chatbot_device_id';
+    let deviceId = localStorage.getItem(deviceIdKey);
+
+    if (!deviceId) {
+      deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem(deviceIdKey, deviceId);
+    }
+
+    return deviceId;
+  }
+
+  function detectPlatform() {
+    const ua = navigator.userAgent.toLowerCase();
+
+    if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod') || ua.includes('mac')) {
+      return 'IOS';
+    } else {
+      return 'WEB';
+    }
+  }
+
+  async function generateToken() {
+    const currentChatKey = getchatKey();
+
+    if (!currentChatKey) {
+      console.log('No chat key found, skipping token generation');
+      return;
+    }
+
+    try {
+      const deviceId = getOrCreateDeviceId();
+      const platform = detectPlatform();
+
+      const requestBody = {
+        "chat_key": chatKey,
+        "device_info": {
+          "device_id": deviceId,
+          "platform": platform
+        }
+      }
+      const response = await fetch('https://moby-api.rocketsystems.net/api/v2/chat/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const result = await response.json();
+      console.log('Token generation result:', result);
+
+      // Save the chat info to localStorage
+      if (result && result.data) {
+        const chatInfoKey = 'chatbot_chat_info_' + currentChatKey;
+        localStorage.setItem(chatInfoKey, JSON.stringify(result.data));
+
+        // If there's an initial message, add it to currentHistory
+        if (result.data.initial_message) {
+          currentHistory = [result.data.initial_message];
+          displayMessagesFromHistory();
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error generating token:', error);
+      return null;
+    }
+  }
+
+  function getStoredChatInfo() {
+    const currentChatKey = getchatKey();
+    if (!currentChatKey) return null;
+
+    const chatInfoKey = 'chatbot_chat_info_' + currentChatKey;
+    const storedInfo = localStorage.getItem(chatInfoKey);
+
+    return storedInfo ? JSON.parse(storedInfo) : null;
+  }
+
+  async function fetchChatHistory(page = 1, append = false) {
+    const storedChatInfo = getStoredChatInfo();
+
+    if (!storedChatInfo || !storedChatInfo.chat_info) {
+      console.log('No stored chat info found');
+      return null;
+    }
+
+    if (isLoadingHistory) {
+      return null;
+    }
+
+    try {
+      isLoadingHistory = true;
+      const chatToken = storedChatInfo.chat_info.token;
+
+      // Get the auth token from localStorage (you may need to adjust this key)
+      const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
+
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: '50'
+      });
+
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      if (chatToken) {
+        headers['x-chat-token'] = chatToken;
+      }
+
+      const response = await fetch(`https://moby-api.rocketsystems.net/api/v2/chat/history?${params}`, {
+        method: 'GET',
+        headers: headers
+      });
+
+      const result = await response.json();
+      console.log('Chat history result:', result);
+
+      if (result && result.data && result.data.history) {
+        if (append) {
+          currentHistory = [...result.data.history, ...currentHistory];
+        } else {
+          currentHistory = result.data.history;
+        }
+
+        // Display messages
+        displayMessagesFromHistory(append);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      return null;
+    } finally {
+      isLoadingHistory = false;
+    }
+  }
+
+  function displayMessagesFromHistory(append = false) {
+    const messagesContainer = document.getElementById('chatbot-messages');
+    if (!messagesContainer) return;
+
+    if (currentHistory.length > 0) {
+      // Save scroll position before updating
+      const previousScrollHeight = messagesContainer.scrollHeight;
+
+      if (!append) {
+        // Clear existing messages
+        messagesContainer.innerHTML = '';
+        messages = [];
+      } else {
+        // Clear messages array
+        messages = [];
+      }
+
+      // Sort history by created_at (oldest first)
+      const sortedHistory = [...currentHistory].sort((a, b) => {
+        return new Date(a.created_at) - new Date(b.created_at);
+      });
+
+      // Display all messages
+      sortedHistory.forEach(msg => {
+        const sender = msg.sender === 'BOT' ? 'bot' : 'user';
+        addMessage(msg.message, sender, false); // false = don't push to messages array
+      });
+
+      // Restore scroll position for append
+      if (append) {
+        const newScrollHeight = messagesContainer.scrollHeight;
+        messagesContainer.scrollTop = newScrollHeight - previousScrollHeight;
+      } else {
+        // Scroll to bottom for initial load
+        setTimeout(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 200);
+      }
+    }
+  }
+
   function initWidget() {
-    // Create widget HTML
+    initializechatKey();
+
     const widgetHTML = createWidgetHTML();
-    
-    // Insert widget into page
+
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = widgetHTML;
     widgetContainer = tempDiv.firstElementChild;
     document.body.appendChild(widgetContainer);
 
-    // Add CSS animations and responsive styles
     addStyles();
 
-    // Add event listeners
+    // Check for stored chat info
+    const storedChatInfo = getStoredChatInfo();
+
+    if (storedChatInfo && storedChatInfo.chat_info) {
+      // Chat info exists, fetch chat history
+      fetchChatHistory();
+    } else {
+      // No stored chat info, generate new token
+      generateToken();
+    }
+
     const toggle = document.getElementById('chatbot-toggle');
     const close = document.getElementById('chatbot-close');
     const input = document.getElementById('chatbot-input');
@@ -348,37 +662,47 @@
     if (close) close.addEventListener('click', toggleChat);
     if (send) send.addEventListener('click', handleUserInput);
     if (input) {
-      input.addEventListener('keypress', function(e) {
+      input.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
           handleUserInput();
         }
       });
     }
 
-    // Add hover effect to toggle button
+    // Add scroll listener for pagination
+    const messagesContainer = document.getElementById('chatbot-messages');
+    if (messagesContainer) {
+      messagesContainer.addEventListener('scroll', function () {
+        // If scrolled to top and not already loading
+        if (this.scrollTop === 0 && !isLoadingHistory) {
+          const storedChatInfo = getStoredChatInfo();
+          if (storedChatInfo && storedChatInfo.chat_info) {
+            currentPage++;
+            fetchChatHistory(currentPage, true); // true = append to existing
+          }
+        }
+      });
+    }
+
     if (toggle) {
-      toggle.addEventListener('mouseenter', function() {
+      toggle.addEventListener('mouseenter', function () {
         this.style.transform = 'scale(1.05)';
       });
-      toggle.addEventListener('mouseleave', function() {
+      toggle.addEventListener('mouseleave', function () {
         this.style.transform = 'scale(1)';
       });
     }
 
-    // Apply mobile styles
     applyMobileStyles();
-    
-    // Apply mobile styles on resize
+
     window.addEventListener('resize', applyMobileStyles);
-    
-    // Handle Safari bottom bar visibility changes
+
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', applyMobileStyles);
       window.visualViewport.addEventListener('scroll', applyMobileStyles);
     }
   }
 
-  // Add CSS styles for animations and responsive design
   function addStyles() {
     const style = document.createElement('style');
     style.textContent = `
@@ -397,14 +721,10 @@
         width: 378px;
         height: 613px;
       }
-      
-      .chatbot-container.mobile {
-        /* Mobile styles applied via JavaScript */
-      }
     
       .chatbot-toggle-button{
           position: fixed;
-          bottom: 30px;
+          bottom: 20px;
           right: 20px;
           padding: 12px;
           font-size: 16px;
@@ -452,7 +772,7 @@
       
       .chatbot-toggle-button{
           position: fixed !important;
-          bottom: 30px !important;
+          bottom: 20px !important;
           right: 20px !important;
           padding: 12px;
           font-size: 16px;
@@ -497,9 +817,9 @@
     const chatWindow = document.getElementById('chatbot-window');
     const toggle = document.getElementById('chatbot-toggle');
     const container = document.getElementById('chatbot-widget-container');
-    
+
     if (!chatWindow || !toggle || !container) return;
-    
+
     if (isMobileDevice()) {
       // Mobile - full width, 550px height, rounded top corners
       chatWindow.classList.add('mobile');
@@ -511,15 +831,15 @@
       chatWindow.style.height = '650px';
       chatWindow.style.maxHeight = '100vh';
       chatWindow.style.borderRadius = '50px 50px 0 0';
-      
+
       // Update header border-radius for mobile
       const header = chatWindow.querySelector('div > div');
       if (header) {
         header.style.borderRadius = '50px 50px 0 0';
       }
-      
+
       toggle.classList.add('mobile');
-      
+
       // Adjust bottom position for Safari on mobile
       if (isSafariOnMobile()) {
         toggle.style.bottom = '40px';
@@ -541,24 +861,32 @@
   }
 
   window.ChatbotWidget = {
-    init: function() {
+    init: function () {
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initWidget);
       } else {
         initWidget();
       }
     },
-    
-    open: function() {
+
+    open: function () {
       if (!isOpen) toggleChat();
     },
-    
-    close: function() {
+
+    close: function () {
       if (isOpen) toggleChat();
     },
-    
-    sendMessage: function(message) {
+
+    sendMessage: function (message) {
       addMessage(message, 'user');
+    },
+
+    getchatKey: function () {
+      return getchatKey();
+    },
+
+    getWebsitesForchatKey: function (customchatKey) {
+      return getWebsitesForchatKey(customchatKey);
     }
   };
 
