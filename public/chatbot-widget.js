@@ -485,21 +485,11 @@
     return window.innerWidth <= 1024;
   }
 
-  // Check if Safari bottom bar is visible
-  function isSafariBottomBarVisible() {
+  // Check if Safari on mobile
+  function isSafariOnMobile() {
     const isSafari = /^((?!chrome|HP_|android).)*safari/i.test(navigator.userAgent);
-    if (!isSafari) return false;
-    
-    // Use visual viewport API if available (more reliable for iOS Safari)
-    if (window.visualViewport) {
-      const heightDifference = window.visualViewport.height - window.innerHeight;
-      // If visual viewport is significantly smaller, bottom bar is likely visible
-      return heightDifference < -50;
-    }
-    
-    // Fallback: Safari shows bottom bar when window.innerHeight is significantly less than window.outerHeight
-    const heightDifference = window.outerHeight - window.innerHeight;
-    return heightDifference > 100;
+    const isMobile = isMobileDevice();
+    return isSafari && isMobile;
   }
 
   // Apply mobile styles
@@ -530,8 +520,8 @@
       
       toggle.classList.add('mobile');
       
-      // Adjust bottom position for Safari bottom bar
-      if (isSafariBottomBarVisible()) {
+      // Adjust bottom position for Safari on mobile
+      if (isSafariOnMobile()) {
         toggle.style.bottom = '40px';
       } else {
         toggle.style.bottom = '20px';
