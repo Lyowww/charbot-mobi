@@ -370,6 +370,12 @@
     
     // Apply mobile styles on resize
     window.addEventListener('resize', applyMobileStyles);
+    
+    // Handle Safari bottom bar visibility changes
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', applyMobileStyles);
+      window.visualViewport.addEventListener('scroll', applyMobileStyles);
+    }
   }
 
   // Add CSS styles for animations and responsive design
@@ -479,6 +485,23 @@
     return window.innerWidth <= 1024;
   }
 
+  // Check if Safari bottom bar is visible
+  function isSafariBottomBarVisible() {
+    const isSafari = /^((?!chrome|HP_|android).)*safari/i.test(navigator.userAgent);
+    if (!isSafari) return false;
+    
+    // Use visual viewport API if available (more reliable for iOS Safari)
+    if (window.visualViewport) {
+      const heightDifference = window.visualViewport.height - window.innerHeight;
+      // If visual viewport is significantly smaller, bottom bar is likely visible
+      return heightDifference < -50;
+    }
+    
+    // Fallback: Safari shows bottom bar when window.innerHeight is significantly less than window.outerHeight
+    const heightDifference = window.outerHeight - window.innerHeight;
+    return heightDifference > 100;
+  }
+
   // Apply mobile styles
   function applyMobileStyles() {
     const chatWindow = document.getElementById('chatbot-window');
@@ -495,7 +518,7 @@
       // container.style.transform = 'translate(-50%, -50%)';
       container.style.right = '0';
       chatWindow.style.width = '100vw';
-      chatWindow.style.height = '550px';
+      chatWindow.style.height = '650px';
       chatWindow.style.maxHeight = '100vh';
       chatWindow.style.borderRadius = '50px 50px 0 0';
       
@@ -506,6 +529,13 @@
       }
       
       toggle.classList.add('mobile');
+      
+      // Adjust bottom position for Safari bottom bar
+      if (isSafariBottomBarVisible()) {
+        toggle.style.bottom = '40px';
+      } else {
+        toggle.style.bottom = '20px';
+      }
     } else {
       // Desktop - 378px width, 613px height
       chatWindow.classList.remove('mobile');
@@ -516,6 +546,7 @@
       chatWindow.style.width = '378px';
       chatWindow.style.height = '613px';
       toggle.classList.remove('mobile');
+      toggle.style.bottom = '20px';
     }
   }
 
