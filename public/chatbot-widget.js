@@ -257,9 +257,13 @@
     messageDiv.appendChild(bubbleDiv);
     messagesContainer.appendChild(messageDiv);
 
-    // Scroll to bottom when message is added
+    // Scroll to show the new message at the top when message is added
     requestAnimationFrame(() => {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // Get the position of the newly added message
+      const messageOffsetTop = messageDiv.offsetTop;
+      
+      // Scroll so the new message appears at the top of the viewport
+      messagesContainer.scrollTop = messageOffsetTop;
       
       // On mobile, ensure input stays visible after scroll
       if (isMobileDevice() && document.getElementById('chatbot-input') === document.activeElement) {
@@ -271,19 +275,21 @@
             const inputRect = inputWrapper.getBoundingClientRect();
             const viewportBottom = window.visualViewport.height;
             
+            // Adjust scroll if input might be hidden, but keep new message visible at top
             if (inputRect.bottom > viewportBottom - 10) {
+              // Recalculate to ensure new message stays at top
               const scrollAmount = inputRect.bottom - (viewportBottom - 10);
-              messagesContainer.scrollTop = messagesContainer.scrollTop + scrollAmount;
+              messagesContainer.scrollTop = messageOffsetTop;
             }
           }
           
-          // Ensure we're at the bottom after adjusting
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          // Final adjustment to ensure new message is at top
+          messagesContainer.scrollTop = messageOffsetTop;
         }, 100);
       } else {
-        // Non-mobile or input not focused - just scroll to bottom
+        // Non-mobile or input not focused - scroll new message to top
         setTimeout(() => {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          messagesContainer.scrollTop = messageOffsetTop;
         }, 50);
       }
     });
@@ -296,15 +302,22 @@
   function scrollToBottom() {
     const messagesContainer = document.getElementById('chatbot-messages');
     if (messagesContainer) {
-      // Use requestAnimationFrame for smoother scrolling
-      requestAnimationFrame(() => {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // Get the last message element to scroll it to top
+      const messages = messagesContainer.querySelectorAll('.message');
+      if (messages.length > 0) {
+        const lastMessage = messages[messages.length - 1];
+        const messageOffsetTop = lastMessage.offsetTop;
         
-        // Double-check after a short delay to ensure scroll happens
-        setTimeout(() => {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 50);
-      });
+        // Use requestAnimationFrame for smoother scrolling
+        requestAnimationFrame(() => {
+          messagesContainer.scrollTop = messageOffsetTop;
+          
+          // Double-check after a short delay to ensure scroll happens
+          setTimeout(() => {
+            messagesContainer.scrollTop = messageOffsetTop;
+          }, 50);
+        });
+      }
     }
   }
 
@@ -349,7 +362,10 @@
 
     typingDiv.appendChild(indicator);
     messagesContainer.appendChild(typingDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // Scroll typing indicator to top
+    requestAnimationFrame(() => {
+      messagesContainer.scrollTop = typingDiv.offsetTop;
+    });
   }
 
   function hideTypingIndicator() {
@@ -371,7 +387,7 @@
     // Unfocus the input after sending
     input.blur();
 
-    // Ensure scroll to bottom after user message
+    // Ensure scroll to show new message at top
     setTimeout(() => {
       scrollToBottom();
     }, 150);
@@ -433,7 +449,7 @@
         addMessage('Sorry, I encountered an error. Please try again.', 'bot');
       }
       
-      // Ensure scroll to bottom after bot response
+      // Ensure scroll to show new message at top after bot response
       setTimeout(() => {
         scrollToBottom();
       }, 200);
@@ -741,11 +757,17 @@
       });
 
       if (append) {
+        // When appending history, maintain scroll position
         const newScrollHeight = messagesContainer.scrollHeight;
         messagesContainer.scrollTop = newScrollHeight - previousScrollHeight;
       } else {
+        // When loading fresh history, scroll to show last message at top
         setTimeout(() => {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          const messages = messagesContainer.querySelectorAll('.message');
+          if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            messagesContainer.scrollTop = lastMessage.offsetTop;
+          }
         }, 200);
       }
     }
