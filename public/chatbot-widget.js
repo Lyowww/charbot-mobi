@@ -715,6 +715,91 @@
             handleUserInput();
           }
         });
+
+        // Handle mobile keyboard visibility
+        if (isMobileDevice()) {
+          input.addEventListener('focus', function() {
+            const chatWindow = document.getElementById('chatbot-window');
+            const messagesContainer = document.getElementById('chatbot-messages');
+            
+            if (chatWindow) {
+              chatWindow.classList.add('keyboard-visible');
+              
+              // Use visual viewport height when keyboard is visible
+              if (window.visualViewport) {
+                const viewportHeight = window.visualViewport.height;
+                const availableHeight = viewportHeight - 20; // 20px padding
+                chatWindow.style.height = availableHeight + 'px';
+                chatWindow.style.maxHeight = availableHeight + 'px';
+              } else {
+                // Fallback: use viewport height
+                const viewportHeight = window.innerHeight;
+                chatWindow.style.height = viewportHeight + 'px';
+                chatWindow.style.maxHeight = viewportHeight + 'px';
+              }
+              
+              // Ensure input area is visible
+              setTimeout(() => {
+                if (messagesContainer) {
+                  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+              }, 150);
+            }
+          });
+
+          input.addEventListener('blur', function() {
+            // Small delay to handle keyboard close animation
+            setTimeout(() => {
+              if (isMobileDevice()) {
+                const chatWindow = document.getElementById('chatbot-window');
+                if (chatWindow) {
+                  chatWindow.classList.remove('keyboard-visible');
+                  chatWindow.style.height = '80vh';
+                  chatWindow.style.maxHeight = '80vh';
+                }
+              }
+            }, 200);
+          });
+
+          // Handle visual viewport changes (keyboard show/hide)
+          if (window.visualViewport) {
+            let lastViewportHeight = window.visualViewport.height;
+            
+            window.visualViewport.addEventListener('resize', function() {
+              const chatWindow = document.getElementById('chatbot-window');
+              const input = document.getElementById('chatbot-input');
+              
+              if (isMobileDevice() && chatWindow) {
+                const currentViewportHeight = window.visualViewport.height;
+                
+                // If viewport shrunk (keyboard appeared)
+                if (currentViewportHeight < lastViewportHeight && document.activeElement === input) {
+                  chatWindow.classList.add('keyboard-visible');
+                  const availableHeight = currentViewportHeight - 20;
+                  chatWindow.style.height = availableHeight + 'px';
+                  chatWindow.style.maxHeight = availableHeight + 'px';
+                  
+                  // Scroll messages to bottom
+                  setTimeout(() => {
+                    const messagesContainer = document.getElementById('chatbot-messages');
+                    if (messagesContainer) {
+                      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                  }, 100);
+                }
+                
+                // If viewport grew (keyboard hidden) and input not focused
+                if (currentViewportHeight > lastViewportHeight && document.activeElement !== input) {
+                  chatWindow.classList.remove('keyboard-visible');
+                  chatWindow.style.height = '80vh';
+                  chatWindow.style.maxHeight = '80vh';
+                }
+                
+                lastViewportHeight = currentViewportHeight;
+              }
+            });
+          }
+        }
       }
 
       const messagesContainer = document.getElementById('chatbot-messages');
@@ -947,6 +1032,12 @@
           height: 80vh !important;
           max-height: 80vh !important;
           border-radius: 24px 24px 0 0 !important;
+          transition: height 0.25s ease-out, max-height 0.25s ease-out;
+        }
+
+        .chatbot-popup.keyboard-visible {
+          height: 100vh !important;
+          max-height: 100vh !important;
         }
 
         .chatbot-toggle-button{
