@@ -725,7 +725,9 @@
       .chatbot-toggle-button{
           position: fixed;
           bottom: 20px;
+          bottom: calc(20px + env(safe-area-inset-bottom));
           right: 20px;
+          right: calc(20px + env(safe-area-inset-right));
           padding: 12px;
           font-size: 16px;
         }
@@ -805,11 +807,24 @@
     return window.innerWidth <= 1024;
   }
 
+  // Check if Safari (any platform)
+  function isSafari() {
+    const ua = navigator.userAgent.toLowerCase();
+    const isSafariUA = /^((?!chrome|HP_|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isMacSafari = /macintosh/i.test(ua) && isSafariUA && !/chrome/i.test(ua);
+    return isSafariUA || isIOS || isMacSafari;
+  }
+  
   // Check if Safari on mobile
   function isSafariOnMobile() {
-    const isSafari = /^((?!chrome|HP_|android).)*safari/i.test(navigator.userAgent);
-    const isMobile = isMobileDevice();
-    return isSafari && isMobile;
+    return isSafari() && isMobileDevice();
+  }
+  
+  // Check if iOS Safari specifically
+  function isIOSSafari() {
+    const ua = navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/i.test(ua) && isSafari();
   }
 
   // Apply mobile styles
@@ -840,9 +855,28 @@
 
       toggle.classList.add('mobile');
 
-      // Adjust bottom position for Safari on mobile
-      if (isSafariOnMobile()) {
-        toggle.style.bottom = '40px';
+      // Adjust bottom position for Safari - account for bottom bar/search bar
+      if (isSafari()) {
+        // For iOS Safari, use safe area insets or calculate based on viewport
+        if (isIOSSafari()) {
+          // iOS Safari - use larger bottom offset to clear the bottom bar
+          // Use safe area inset if available, otherwise use calculated value
+          let safeAreaBottom = 0;
+          try {
+            const computed = getComputedStyle(document.documentElement);
+            const safeArea = computed.getPropertyValue('env(safe-area-inset-bottom)');
+            safeAreaBottom = parseInt(safeArea) || 0;
+          } catch (e) {
+            // Fallback if safe area not available
+            safeAreaBottom = 0;
+          }
+          // Calculate bottom offset - at least 100px to clear iOS bottom bar/search bar
+          const bottomOffset = Math.max(100 + safeAreaBottom, 100);
+          toggle.style.bottom = bottomOffset + 'px';
+        } else {
+          // Desktop Safari or other Safari variants
+          toggle.style.bottom = '20px';
+        }
       } else {
         toggle.style.bottom = '20px';
       }
