@@ -824,24 +824,66 @@
         // Handle mobile keyboard visibility
         if (isMobileDevice()) {
           let scrollPositionBeforeFocus = 0;
+          let messagesContainerScrollBeforeFocus = 0;
+          
+          // Prevent all scroll events when input is focused
+          const preventScroll = function(e) {
+            // Allow textarea scrolling
+            if (e.target === input || input.contains(e.target)) {
+              return true;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          };
+          
+          // Store references for cleanup
+          let preventScrollHandlers = {
+            documentTouchmove: null,
+            documentWheel: null,
+            documentScroll: null,
+            windowScroll: null,
+            chatWindowTouchmove: null,
+            chatWindowWheel: null,
+            chatWindowScroll: null,
+            messagesTouchmove: null,
+            messagesWheel: null,
+            messagesScroll: null
+          };
           
           input.addEventListener('focus', function(e) {
             // Prevent page scroll on mobile
             scrollPositionBeforeFocus = window.pageYOffset || window.scrollY || document.documentElement.scrollTop;
             
-            // Lock body scroll immediately
+            // Lock body scroll immediately - disable ALL page scrolling
             document.body.style.position = 'fixed';
             document.body.style.top = `-${scrollPositionBeforeFocus}px`;
             document.body.style.width = '100%';
             document.body.style.overflow = 'hidden';
+            document.body.style.left = '0';
+            document.body.style.right = '0';
             document.documentElement.style.overflow = 'hidden';
+            document.documentElement.style.position = 'fixed';
+            document.documentElement.style.top = `-${scrollPositionBeforeFocus}px`;
+            document.documentElement.style.width = '100%';
             
             const chatWindow = document.getElementById('chatbot-window');
             const messagesContainer = document.getElementById('chatbot-messages');
-            const inputWrapper = input.closest('.chatbot-input-wrapper');
             
+            // Disable scrolling in chat messages container
+            if (messagesContainer) {
+              messagesContainerScrollBeforeFocus = messagesContainer.scrollTop;
+              messagesContainer.style.overflow = 'hidden';
+              messagesContainer.style.touchAction = 'none';
+              messagesContainer.style.overscrollBehavior = 'none';
+              messagesContainer.style.pointerEvents = 'none'; // Prevent touch interactions
+            }
+            
+            // Disable scrolling in chat window
             if (chatWindow) {
               chatWindow.classList.add('keyboard-visible');
+              chatWindow.style.overflow = 'hidden';
+              chatWindow.style.touchAction = 'none';
               
               // Use visual viewport height when keyboard is visible
               const updateChatHeight = () => {
@@ -860,29 +902,43 @@
               
               updateChatHeight();
               
-              // Scroll chat to show input after a short delay to allow keyboard to appear
+              // Update height after keyboard appears
               setTimeout(() => {
-                if (messagesContainer) {
-                  // Scroll to bottom to ensure input is visible
-                  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }
-                
-                // Scroll input into view within chat container if needed
-                if (inputWrapper && window.visualViewport) {
-                  const inputRect = inputWrapper.getBoundingClientRect();
-                  const viewportBottom = window.visualViewport.height;
-                  
-                  if (inputRect.bottom > viewportBottom - 10) {
-                    // Input is too low, scroll it into view
-                    const scrollAmount = inputRect.bottom - (viewportBottom - 10);
-                    if (messagesContainer) {
-                      messagesContainer.scrollTop = messagesContainer.scrollTop + scrollAmount;
-                    }
-                  }
-                }
-                
                 updateChatHeight();
               }, 300);
+            }
+            
+            // Add scroll prevention listeners and store references
+            preventScrollHandlers.documentTouchmove = preventScroll;
+            preventScrollHandlers.documentWheel = preventScroll;
+            preventScrollHandlers.documentScroll = preventScroll;
+            preventScrollHandlers.windowScroll = preventScroll;
+            
+            document.addEventListener('touchmove', preventScroll, { passive: false });
+            document.addEventListener('wheel', preventScroll, { passive: false });
+            document.addEventListener('scroll', preventScroll, { passive: false });
+            window.addEventListener('scroll', preventScroll, { passive: false });
+            
+            // Prevent scroll on chat window
+            if (chatWindow) {
+              preventScrollHandlers.chatWindowTouchmove = preventScroll;
+              preventScrollHandlers.chatWindowWheel = preventScroll;
+              preventScrollHandlers.chatWindowScroll = preventScroll;
+              
+              chatWindow.addEventListener('touchmove', preventScroll, { passive: false });
+              chatWindow.addEventListener('wheel', preventScroll, { passive: false });
+              chatWindow.addEventListener('scroll', preventScroll, { passive: false });
+            }
+            
+            // Prevent scroll on messages container
+            if (messagesContainer) {
+              preventScrollHandlers.messagesTouchmove = preventScroll;
+              preventScrollHandlers.messagesWheel = preventScroll;
+              preventScrollHandlers.messagesScroll = preventScroll;
+              
+              messagesContainer.addEventListener('touchmove', preventScroll, { passive: false });
+              messagesContainer.addEventListener('wheel', preventScroll, { passive: false });
+              messagesContainer.addEventListener('scroll', preventScroll, { passive: false });
             }
           });
 
@@ -890,25 +946,94 @@
             // Small delay to handle keyboard close animation
             setTimeout(() => {
               if (isMobileDevice()) {
+                // Remove all scroll prevention listeners
+                if (preventScrollHandlers.documentTouchmove) {
+                  document.removeEventListener('touchmove', preventScrollHandlers.documentTouchmove);
+                }
+                if (preventScrollHandlers.documentWheel) {
+                  document.removeEventListener('wheel', preventScrollHandlers.documentWheel);
+                }
+                if (preventScrollHandlers.documentScroll) {
+                  document.removeEventListener('scroll', preventScrollHandlers.documentScroll);
+                }
+                if (preventScrollHandlers.windowScroll) {
+                  window.removeEventListener('scroll', preventScrollHandlers.windowScroll);
+                }
+                
+                const chatWindow = document.getElementById('chatbot-window');
+                const messagesContainer = document.getElementById('chatbot-messages');
+                
+                // Remove listeners from chat window
+                if (chatWindow) {
+                  if (preventScrollHandlers.chatWindowTouchmove) {
+                    chatWindow.removeEventListener('touchmove', preventScrollHandlers.chatWindowTouchmove);
+                  }
+                  if (preventScrollHandlers.chatWindowWheel) {
+                    chatWindow.removeEventListener('wheel', preventScrollHandlers.chatWindowWheel);
+                  }
+                  if (preventScrollHandlers.chatWindowScroll) {
+                    chatWindow.removeEventListener('scroll', preventScrollHandlers.chatWindowScroll);
+                  }
+                  
+                  chatWindow.classList.remove('keyboard-visible');
+                  chatWindow.style.height = '80vh';
+                  chatWindow.style.maxHeight = '80vh';
+                  chatWindow.style.overflow = '';
+                  chatWindow.style.touchAction = '';
+                }
+                
+                // Remove listeners from messages container and re-enable scrolling
+                if (messagesContainer) {
+                  if (preventScrollHandlers.messagesTouchmove) {
+                    messagesContainer.removeEventListener('touchmove', preventScrollHandlers.messagesTouchmove);
+                  }
+                  if (preventScrollHandlers.messagesWheel) {
+                    messagesContainer.removeEventListener('wheel', preventScrollHandlers.messagesWheel);
+                  }
+                  if (preventScrollHandlers.messagesScroll) {
+                    messagesContainer.removeEventListener('scroll', preventScrollHandlers.messagesScroll);
+                  }
+                  
+                  messagesContainer.style.overflow = 'auto';
+                  messagesContainer.style.touchAction = 'pan-y';
+                  messagesContainer.style.overscrollBehavior = 'contain';
+                  messagesContainer.style.pointerEvents = '';
+                  
+                  // Scroll to bottom to show latest messages
+                  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+                
                 // Restore body scroll
                 const scrollY = document.body.style.top;
                 document.body.style.position = '';
                 document.body.style.top = '';
                 document.body.style.width = '';
                 document.body.style.overflow = '';
+                document.body.style.left = '';
+                document.body.style.right = '';
                 document.documentElement.style.overflow = '';
+                document.documentElement.style.position = '';
+                document.documentElement.style.top = '';
+                document.documentElement.style.width = '';
                 
                 if (scrollY) {
                   const scrollPosition = parseInt(scrollY || '0') * -1;
                   window.scrollTo(0, scrollPosition);
                 }
                 
-                const chatWindow = document.getElementById('chatbot-window');
-                if (chatWindow) {
-                  chatWindow.classList.remove('keyboard-visible');
-                  chatWindow.style.height = '80vh';
-                  chatWindow.style.maxHeight = '80vh';
-                }
+                // Clear handler references
+                preventScrollHandlers = {
+                  documentTouchmove: null,
+                  documentWheel: null,
+                  documentScroll: null,
+                  windowScroll: null,
+                  chatWindowTouchmove: null,
+                  chatWindowWheel: null,
+                  chatWindowScroll: null,
+                  messagesTouchmove: null,
+                  messagesWheel: null,
+                  messagesScroll: null
+                };
               }
             }, 250);
           });
@@ -934,24 +1059,16 @@
                   chatWindow.style.height = availableHeight + 'px';
                   chatWindow.style.maxHeight = availableHeight + 'px';
                   
-                  // Ensure input is visible by scrolling chat container
-                  setTimeout(() => {
-                    if (messagesContainer) {
-                      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    }
-                    
-                    if (inputWrapper) {
-                      const inputRect = inputWrapper.getBoundingClientRect();
-                      const viewportBottom = window.visualViewport.height;
-                      
-                      if (inputRect.bottom > viewportBottom - 10) {
-                        const scrollAmount = inputRect.bottom - (viewportBottom - 10);
-                        if (messagesContainer) {
-                          messagesContainer.scrollTop = messagesContainer.scrollTop + scrollAmount;
-                        }
-                      }
-                    }
-                  }, 100);
+                  // Ensure scroll is disabled (no scrolling allowed when input is focused)
+                  chatWindow.style.overflow = 'hidden';
+                  chatWindow.style.touchAction = 'none';
+                  
+                  if (messagesContainer) {
+                    messagesContainer.style.overflow = 'hidden';
+                    messagesContainer.style.touchAction = 'none';
+                    messagesContainer.style.overscrollBehavior = 'none';
+                    messagesContainer.style.pointerEvents = 'none';
+                  }
                 }
                 
                 // If viewport grew (keyboard hidden) and input not focused
