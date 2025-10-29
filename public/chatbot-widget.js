@@ -335,6 +335,14 @@
     input.value = '';
     input.style.height = 'auto';
 
+    // Unfocus the input after sending
+    input.blur();
+
+    // Ensure scroll to bottom after user message
+    setTimeout(() => {
+      scrollToBottom();
+    }, 150);
+
     const sendButton = document.getElementById('chatbot-send');
     if (sendButton) sendButton.disabled = true;
 
@@ -346,6 +354,9 @@
       if (!storedChatInfo || !storedChatInfo.chat_info || !storedChatInfo.property_info) {
         hideTypingIndicator();
         addMessage('Sorry, chat session not initialized properly.', 'bot');
+        setTimeout(() => {
+          scrollToBottom();
+        }, 200);
         return;
       }
 
@@ -388,9 +399,17 @@
       } else {
         addMessage('Sorry, I encountered an error. Please try again.', 'bot');
       }
+      
+      // Ensure scroll to bottom after bot response
+      setTimeout(() => {
+        scrollToBottom();
+      }, 200);
     } catch (error) {
       hideTypingIndicator();
       addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+      setTimeout(() => {
+        scrollToBottom();
+      }, 200);
     }
   }
 
@@ -720,7 +739,6 @@
         if (isMobileDevice()) {
           input.addEventListener('focus', function() {
             const chatWindow = document.getElementById('chatbot-window');
-            const messagesContainer = document.getElementById('chatbot-messages');
             
             if (chatWindow) {
               chatWindow.classList.add('keyboard-visible');
@@ -737,13 +755,6 @@
                 chatWindow.style.height = viewportHeight + 'px';
                 chatWindow.style.maxHeight = viewportHeight + 'px';
               }
-              
-              // Ensure input area is visible
-              setTimeout(() => {
-                if (messagesContainer) {
-                  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }
-              }, 150);
             }
           });
 
@@ -778,14 +789,6 @@
                   const availableHeight = currentViewportHeight - 20;
                   chatWindow.style.height = availableHeight + 'px';
                   chatWindow.style.maxHeight = availableHeight + 'px';
-                  
-                  // Scroll messages to bottom
-                  setTimeout(() => {
-                    const messagesContainer = document.getElementById('chatbot-messages');
-                    if (messagesContainer) {
-                      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    }
-                  }, 100);
                 }
                 
                 // If viewport grew (keyboard hidden) and input not focused
