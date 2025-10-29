@@ -9,6 +9,7 @@
   let currentHistory = [];
   let currentPage = 1;
   let isLoadingHistory = false;
+  let chatPersona = null;
 
   function createWidgetHTML() {
     return `
@@ -433,6 +434,7 @@
       chatUrl = script.getAttribute('chat_url') || null;
       if (chatUrl) {
         chatKey = chatUrl.split('/').pop();
+        chatPersona = script.getAttribute('persona') || null;
       }
     }
 
@@ -505,6 +507,7 @@
 
       const requestBody = {
         "chat_key": chatKey,
+        "persona": chatPersona,
         "device_info": {
           "device_id": deviceId,
           "platform": platform
