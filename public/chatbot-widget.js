@@ -413,6 +413,31 @@
     }
   }
 
+  function disableBodyScroll() {
+    // Prevent background scrolling when chat is open
+    const scrollY = window.scrollY || window.pageYOffset;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    // Store scroll position for restoration
+    document.body.dataset.scrollY = scrollY.toString();
+  }
+
+  function enableBodyScroll() {
+    // Restore background scrolling when chat is closed
+    const scrollY = document.body.dataset.scrollY || '0';
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    // Restore scroll position
+    window.scrollTo(0, parseInt(scrollY, 10));
+    delete document.body.dataset.scrollY;
+  }
+
   function toggleChat() {
     const chatWindow = document.getElementById('chatbot-window');
     const toggle = document.getElementById('chatbot-toggle');
@@ -425,6 +450,7 @@
       chatWindow.classList.add('active');
       if (overlay) overlay.classList.add('active');
       toggle.style.display = 'none';
+      disableBodyScroll();
       const input = document.getElementById('chatbot-input');
       if (input) input.focus();
       scrollToBottom();
@@ -432,6 +458,7 @@
       chatWindow.classList.remove('active');
       if (overlay) overlay.classList.remove('active');
       toggle.style.display = 'flex';
+      enableBodyScroll();
     }
   }
 
