@@ -953,8 +953,8 @@
 
         .indicator-mobile {
           display: block !important;
-          width: 12px !important;
-          height: 12px !important;
+          width: 16px !important;
+          height: 16px !important;
           border: 3px solid #0046FF !important;
           background: #00FF85 !important;
           border-radius: 50% !important;
