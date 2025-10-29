@@ -674,7 +674,13 @@
 
       const storedChatInfo = getStoredChatInfo();
 
-      if (storedChatInfo && storedChatInfo.chat_info) {
+      // Check if persona field exists in storedChatInfo.chat_info
+      if (storedChatInfo && storedChatInfo.chat_info && !storedChatInfo.chat_info.persona) {
+        // Clear all local storage if persona is missing
+        localStorage.clear();
+        // Regenerate token with persona
+        generateToken();
+      } else if (storedChatInfo && storedChatInfo.chat_info) {
         fetchChatHistory();
       } else {
         generateToken();
