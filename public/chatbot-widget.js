@@ -146,6 +146,7 @@
                   max-height: 100px;
                   outline: none;
                   background: transparent;
+                  color: black;
                 "
               ></textarea>
               <button 
@@ -198,7 +199,7 @@
         ">
           <span class="button-content" style="display: flex; align-items: center;">
             <span class="toggle-text">Questions?</span>
-            <span class="indicator" style="
+            <span class="indicator indicator-desktop" style="
               width: 10px;
               height: 10px;
               background: #00FF85;
@@ -206,6 +207,16 @@
               margin-left: 12px;
             "></span>
           </span>
+          <span class="indicator-mobile" style="
+            width: 16px;
+            height: 16px;
+            background: #00FF85;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: none;
+          "></span>
           <svg class="button-icon" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
             <path d="M8.07297 8.19358C8.65034 7.612 9.51651 7.43881 10.2385 7.75529L40.8096 21.6021C41.0181 21.6945 41.2039 21.822 41.3592 21.9772C41.7059 22.3238 41.9051 22.8065 41.8948 23.3237C41.8801 24.0749 41.4287 24.7667 40.7405 25.092L8.78576 40.2103C8.05007 40.5598 7.19375 40.4207 6.63889 39.8658L6.63655 39.8635C6.08077 39.3046 5.94638 38.4442 6.29905 37.7107L12.9178 23.9084L6.84866 10.3604C6.52606 9.63773 6.69413 8.77376 8.07297 8.19358ZM16.4627 25.692L12.4338 34.0944L30.1924 25.692H16.4627ZM16.0186 21.1264L16.0198 20.892H29.3744L12.5968 13.4869L16.0186 21.1264Z" fill="white"/>
           </svg>
@@ -214,7 +225,6 @@
     `;
   }
 
-  // Add message to chat
   function addMessage(text, sender = 'bot', pushToArray = true) {
     const messagesContainer = document.getElementById('chatbot-messages');
     if (!messagesContainer) return;
@@ -246,7 +256,6 @@
     messageDiv.appendChild(bubbleDiv);
     messagesContainer.appendChild(messageDiv);
 
-    // Scroll to bottom after adding message
     setTimeout(() => {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 100);
@@ -370,7 +379,6 @@
       });
 
       const result = await response.json();
-      console.log('Send message result:', result);
 
       hideTypingIndicator();
 
@@ -380,7 +388,6 @@
         addMessage('Sorry, I encountered an error. Please try again.', 'bot');
       }
     } catch (error) {
-      console.error('Error sending message:', error);
       hideTypingIndicator();
       addMessage('Sorry, I encountered an error. Please try again.', 'bot');
     }
@@ -390,8 +397,6 @@
     const chatWindow = document.getElementById('chatbot-window');
     const toggle = document.getElementById('chatbot-toggle');
     const overlay = document.getElementById('chatbot-overlay');
-    console.log('Chat ID:', chatKey);
-    console.log('Chat Url:', chatUrl);
     if (!chatWindow || !toggle) return;
 
     isOpen = !isOpen;
@@ -491,7 +496,6 @@
     const currentChatKey = getchatKey();
 
     if (!currentChatKey) {
-      console.log('No chat key found, skipping token generation');
       return;
     }
 
@@ -515,14 +519,11 @@
       });
 
       const result = await response.json();
-      console.log('Token generation result:', result);
 
-      // Save the chat info to localStorage
       if (result && result.data) {
         const chatInfoKey = 'chatbot_chat_info_' + currentChatKey;
         localStorage.setItem(chatInfoKey, JSON.stringify(result.data));
 
-        // If there's an initial message, add it to currentHistory
         if (result.data.initial_message) {
           currentHistory = [result.data.initial_message];
           displayMessagesFromHistory();
@@ -531,7 +532,6 @@
 
       return result;
     } catch (error) {
-      console.error('Error generating token:', error);
       return null;
     }
   }
@@ -550,7 +550,6 @@
     const storedChatInfo = getStoredChatInfo();
 
     if (!storedChatInfo || !storedChatInfo.chat_info) {
-      console.log('No stored chat info found');
       return null;
     }
 
@@ -562,7 +561,6 @@
       isLoadingHistory = true;
       const chatToken = storedChatInfo.chat_info.token;
 
-      // Get the auth token from localStorage (you may need to adjust this key)
       const authToken = localStorage.getItem('auth_token染色体') || localStorage.getItem('token');
 
       const params = new URLSearchParams({
@@ -588,7 +586,6 @@
       });
 
       const result = await response.json();
-      console.log('Chat history result:', result);
 
       if (result && result.data && result.data.history) {
         if (append) {
@@ -597,13 +594,11 @@
           currentHistory = result.data.history;
         }
 
-        // Display messages
         displayMessagesFromHistory(append);
       }
 
       return result;
     } catch (error) {
-      console.error('Error fetching chat history:', error);
       return null;
     } finally {
       isLoadingHistory = false;
@@ -615,11 +610,9 @@
     if (!messagesContainer) return;
 
     if (currentHistory.length > 0) {
-      // Save scroll position before updating
       const previousScrollHeight = messagesContainer.scrollHeight;
 
       if (!append) {
-        // Clear existing messages (but keep initial message)
         const initialMsg = messagesContainer.querySelector('.message.assistant');
         messagesContainer.innerHTML = '';
         if (initialMsg) {
@@ -627,27 +620,22 @@
         }
         messages = [];
       } else {
-        // Clear messages array
         messages = [];
       }
 
-      // Sort history by created_at (oldest first)
       const sortedHistory = [...currentHistory].sort((a, b) => {
         return new Date(a.created_at) - new Date(b.created_at);
       });
 
-      // Display all messages
       sortedHistory.forEach(msg => {
         const sender = msg.sender === 'BOT' ? 'bot' : 'user';
-        addMessage(msg.message, sender, false); // false = don't push to messages array
+        addMessage(msg.message, sender, false);
       });
 
-      // Restore scroll position for append
       if (append) {
         const newScrollHeight = messagesContainer.scrollHeight;
         messagesContainer.scrollTop = newScrollHeight - previousScrollHeight;
       } else {
-        // Scroll to bottom for initial load
         setTimeout(() => {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }, 200);
@@ -657,46 +645,35 @@
 
   function initWidget() {
     try {
-      console.log('Initializing chatbot widget...');
       initializechatKey();
 
       if (!chatUrl || !chatKey) {
-        console.error('Chatbot widget: chat_url attribute not found on script tag. Please add chat_url="..." to your script tag.');
         return;
       }
 
-      console.log('Chatbot widget initialized with chat_url:', chatUrl);
       const widgetHTML = createWidgetHTML();
 
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = widgetHTML;
 
-      // Append all children (overlay and widget container)
       while (tempDiv.firstChild) {
         document.body.appendChild(tempDiv.firstChild);
       }
 
-      // Get reference to the widget container
       widgetContainer = document.getElementById('chatbot-widget-container');
 
       if (!widgetContainer || !document.body) {
-        console.error('Chatbot widget: Failed to create widget or document.body not ready');
         return;
       }
 
-      console.log('Chatbot widget: Widget container added to DOM:', !!widgetContainer.parentNode);
-      console.log('Chatbot widget: Container in viewport:', widgetContainer.getBoundingClientRect());
 
       addStyles();
 
-      // Check for stored chat info
       const storedChatInfo = getStoredChatInfo();
 
       if (storedChatInfo && storedChatInfo.chat_info) {
-        // Chat info exists, fetch chat history
         fetchChatHistory();
       } else {
-        // No stored chat info, generate new token
         generateToken();
       }
 
@@ -706,26 +683,16 @@
       const input = document.getElementById('chatbot-input');
       const send = document.getElementById('chatbot-send');
 
-      console.log('Chatbot widget: Button element found:', !!toggle);
       if (toggle) {
-        console.log('Chatbot widget: Button styles - display:', window.getComputedStyle(toggle).display,
-          ', visibility:', window.getComputedStyle(toggle).visibility,
-          ', opacity:', window.getComputedStyle(toggle).opacity,
-          ', bottom:', window.getComputedStyle(toggle).bottom,
-          ', right:', window.getComputedStyle(toggle).right);
-        // Ensure button is visible
         toggle.style.display = 'flex';
         toggle.style.visibility = 'visible';
         toggle.style.opacity = '1';
         toggle.addEventListener('click', toggleChat);
-      } else {
-        console.error('Chatbot widget: Toggle button not found!');
       }
       if (close) close.addEventListener('click', toggleChat);
       if (overlay) overlay.addEventListener('click', toggleChat);
       if (send) send.addEventListener('click', handleUserInput);
       if (input) {
-        // Auto-resize textarea
         input.addEventListener('input', function () {
           this.style.height = 'auto';
           this.style.height = Math.min(this.scrollHeight, 100) + 'px';
@@ -733,7 +700,6 @@
           if (sendButton) sendButton.disabled = this.value.trim() === '';
         });
 
-        // Send message on Enter (Shift+Enter for new line)
         input.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -742,16 +708,14 @@
         });
       }
 
-      // Add scroll listener for pagination
       const messagesContainer = document.getElementById('chatbot-messages');
       if (messagesContainer) {
         messagesContainer.addEventListener('scroll', function () {
-          // If scrolled to top and not already loading
           if (this.scrollTop === 0 && !isLoadingHistory) {
             const storedChatInfo = getStoredChatInfo();
             if (storedChatInfo && storedChatInfo.chat_info) {
               currentPage++;
-              fetchChatHistory(currentPage, true); // true = append to existing
+              fetchChatHistory(currentPage, true);
             }
           }
         });
@@ -770,12 +734,10 @@
 
       applyMobileStyles();
 
-      // Recalculate after a short delay to ensure visualViewport is ready (especially for iOS Safari)
       setTimeout(() => {
         applyMobileStyles();
       }, 100);
 
-      // Also recalculate after page is fully loaded
       if (document.readyState === 'loading') {
         window.addEventListener('load', () => {
           setTimeout(applyMobileStyles, 50);
@@ -789,7 +751,6 @@
         window.visualViewport.addEventListener('scroll', applyMobileStyles);
       }
 
-      console.log('Chatbot widget setup complete');
     } catch (error) {
       console.error('Chatbot widget initialization error:', error);
     }
@@ -989,6 +950,20 @@
           padding: 0 !important;
           box-shadow: 0 8px 24px rgba(0, 70, 255, 0.4) !important;
         }
+
+        .indicator-mobile {
+          display: block !important;
+          width: 12px !important;
+          height: 12px !important;
+          border: 3px solid #0046FF !important;
+          background: #00FF85 !important;
+          border-radius: 50% !important;
+          position: absolute !important;
+          top: 12px !important;
+          right: 12px !important;
+          z-index: 1000 !important;
+          animation: pulse 2s infinite !important;
+        }
         
         .button-content {
           display: none !important;
@@ -1018,20 +993,16 @@
     document.head.appendChild(style);
   }
 
-  // Detect mobile device based on screen width
   function isMobileDevice() {
     return window.innerWidth <= 480;
   }
 
-  // Check if Safari (any platform) - improved detection
   function isSafari() {
     const ua = navigator.userAgent || '';
-    // More reliable Safari detection
     const hasSafari = /safari/i.test(ua);
     const noChrome = !/chrome/i.test(ua) && !/chromium/i.test(ua);
     const isIOS = /iphone|ipad|ipod/i.test(ua);
 
-    // Check for Safari browser indicators
     const isMac = /macintosh/i.test(ua);
     const hasSafariIndicator = window.safari !== undefined ||
       (hasSafari && noChrome) ||
@@ -1040,15 +1011,12 @@
     return hasSafariIndicator;
   }
 
-  // Check if iOS Safari specifically
   function isIOSSafari() {
     const ua = navigator.userAgent || '';
     return (/iphone|ipad|ipod/i.test(ua)) && isSafari();
   }
 
-  // Calculate proper bottom position for Safari
   function getSafariBottomPosition() {
-    // Always check if it's Safari first
     const safari = isSafari();
 
     if (!safari) {
@@ -1056,8 +1024,7 @@
     }
 
     if (isIOSSafari()) {
-      // For iOS Safari, calculate based on visualViewport
-      let bottomOffset = 100; // Increased default safe distance for iOS Safari
+      let bottomOffset = 100;
 
       if (window.visualViewport && window.innerHeight) {
         try {
@@ -1065,13 +1032,10 @@
           const windowHeight = window.innerHeight;
           const bottomBarHeight = windowHeight - viewportHeight;
 
-          // iOS Safari bottom bar (search bar + home indicator area)
-          // Minimum is 100px, but add extra if we detect bottom bar
           if (bottomBarHeight > 0) {
             bottomOffset = Math.max(100, bottomBarHeight + 70);
           }
         } catch (e) {
-          // Use default if calculation fails
           bottomOffset = 100;
         }
       }
@@ -1079,18 +1043,15 @@
       return bottomOffset;
     }
 
-    // Desktop Safari - keep at standard position
     return 30;
   }
 
-  // Apply mobile styles
   function applyMobileStyles() {
     const chatWindow = document.getElementById('chatbot-window');
     const toggle = document.getElementById('chatbot-toggle');
     const container = document.getElementById('chatbot-widget-container');
 
     if (!chatWindow || !toggle || !container) {
-      console.warn('Chatbot widget: applyMobileStyles - Missing elements (chatWindow:', !!chatWindow, ', toggle:', !!toggle, ', container:', !!container, ')');
       return;
     }
 
@@ -1106,7 +1067,6 @@
 
       toggle.classList.add('mobile');
 
-      // Set bottom position - Safari will get special handling
       const bottomPos = getSafariBottomPosition();
       toggle.style.bottom = bottomPos + 'px';
       toggle.style.right = '20px';
@@ -1119,13 +1079,10 @@
       const bottomPos = getSafariBottomPosition();
       toggle.style.bottom = bottomPos + 'px';
       toggle.style.right = '30px';
-      // Ensure button is visible on desktop
       toggle.style.display = 'flex';
       toggle.style.visibility = 'visible';
     }
 
-    console.log('Chatbot widget: Button after applyMobileStyles - display:', window.getComputedStyle(toggle).display,
-      ', bottom:', toggle.style.bottom, ', right:', toggle.style.right);
   }
 
   window.ChatbotWidget = {
@@ -1158,40 +1115,28 @@
     }
   };
 
-  // Auto-initialize if script has chat_url attribute and autoInit is not disabled
   const script = document.currentScript;
   let shouldAutoInit = false;
   let targetScript = script;
 
   if (!targetScript) {
-    // Fallback: find the script tag
     const scripts = document.querySelectorAll('script[src*="chatbot-widget"]');
-    console.log('Chatbot widget: currentScript not available, found', scripts.length, 'potential script tags');
     for (let i = scripts.length - 1; i >= 0; i--) {
       if (scripts[i].getAttribute('chat_url')) {
         targetScript = scripts[i];
-        console.log('Chatbot widget: Found script tag with chat_url:', scripts[i].getAttribute('chat_url'));
         break;
       }
     }
   } else {
-    console.log('Chatbot widget: Using currentScript');
   }
 
   if (targetScript) {
     const hasChatUrl = targetScript.getAttribute('chat_url');
     const autoInitDisabled = targetScript.dataset.autoInit === 'false';
     shouldAutoInit = hasChatUrl && !autoInitDisabled;
-    console.log('Chatbot widget: shouldAutoInit =', shouldAutoInit, '(hasChatUrl:', !!hasChatUrl, ', autoInitDisabled:', autoInitDisabled, ')');
-  } else {
-    console.warn('Chatbot widget: No script tag found with chatbot-widget.js and chat_url attribute');
   }
-
-  if (shouldAutoInit) {
-    console.log('Chatbot widget: Auto-initializing...');
+  if (shouldAutoInit) { 
     window.ChatbotWidget.init();
-  } else {
-    console.log('Chatbot widget: Auto-initialization skipped. Make sure you have chat_url attribute on your script tag.');
   }
 
 })();
