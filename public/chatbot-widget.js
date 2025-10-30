@@ -67,6 +67,7 @@
           <div class="chatbot-header" style="
             background: white;
             padding: 24px;
+            padding-bottom: 16px;
             display: grid;
             border-radius: 24px 24px 0 0;
             grid-template-columns: 36px 1fr 36px;
@@ -139,7 +140,7 @@
 
           <!-- Input Area -->
           <div class="chatbot-input-wrapper" style="
-            padding: 20px 24px;
+            padding: calc(20px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-right)) 20px calc(24px + env(safe-area-inset-left));
           ">
             <div class="chatbot-input-container" style="
               display: flex;
@@ -154,6 +155,7 @@
               <textarea 
                 id="chatbot-input" 
                 class="chatbot-input"
+                aria-label="Type your message here"
                 placeholder="Type your message here..."
                 rows="1"
                 style="
@@ -167,11 +169,18 @@
                   background: transparent;
                   color: black;
                 "
+                role="textbox"
+                aria-multiline="true"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="true"
               ></textarea>
               <button 
                 id="chatbot-send" 
                 class="input-button send" 
                 title="Send message"
+                aria-label="Send message"
+                aria-disabled="true"
                 disabled
                 style="
                   background: transparent;
@@ -187,6 +196,8 @@
                   width: 30px;
                   height: 30px;
                 "
+                tabindex="0"
+                role="button"
               >
                 <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6.06073 6.82798C6.54195 6.34333 7.26375 6.19901 7.86542 6.46274L34.008 18.0018C34.1818 18.0788 34.3366 18.185 34.466 18.3143C34.7549 18.6032 34.9209 19.0054 34.9123 19.4364C34.9001 20.0624 34.5239 20.6389 33.9504 20.91L7.32147 33.5086C6.70839 33.7998 5.99479 33.6839 5.53241 33.2215L5.53046 33.2196C5.06731 32.7538 4.95532 32.0368 5.24921 31.4256L10.7648 19.9237L5.70722 8.63364C5.43838 8.03144 5.57844 7.31147 6.06073 6.82798ZM13.7189 21.41L10.3615 28.412L25.1603 21.41H13.7189ZM13.3488 17.6053L13.3498 17.41H24.4787L10.4973 11.2391L13.3488 17.6053Z" fill="black"/>
