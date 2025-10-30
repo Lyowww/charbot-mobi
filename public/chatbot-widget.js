@@ -45,7 +45,7 @@
           <!-- Drag Bar (mobile) -->
           <div id="chatbot-dragbar" style="
             width: 100%;
-            height: 20px;
+            height: 28px;
             position: relative;
             cursor: grab;
             touch-action: none;
@@ -55,7 +55,7 @@
             <div style="
               position: absolute;
               left: 50%;
-              top: 8px;
+              top: 10px;
               transform: translateX(-50%);
               width: 42px;
               height: 4px;
@@ -252,6 +252,15 @@
   function addMessage(text, sender = 'bot', pushToArray = true) {
     const messagesContainer = document.getElementById('chatbot-messages');
     if (!messagesContainer) return;
+
+    // Replace backend limit error with a friendlier message
+    if (
+      sender === 'bot' &&
+      typeof text === 'string' &&
+      text.trim() === 'Error user hits the limit'
+    ) {
+      text = 'user limit has expired wait a minute for again talking';
+    }
 
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender === 'bot' ? 'assistant' : 'user'}`;
@@ -874,7 +883,7 @@
         let currentY = 0;
         let dragging = false;
         let hasMoved = false;
-        const CLOSE_THRESHOLD = 90;
+        const getCloseThreshold = () => Math.max(120, (chatWindow.clientHeight || 600) * 0.35);
 
         const setTransform = (y) => {
           chatWindow.style.transform = `translateY(${Math.max(0, y)}px)`;
@@ -886,12 +895,24 @@
           setTimeout(() => { chatWindow.style.transition = ''; }, 200);
         };
 
+        const closeWithAnimation = () => {
+          const distance = (chatWindow.clientHeight || 600) + 100;
+          chatWindow.style.transition = 'transform 220ms ease-out';
+          setTransform(distance);
+          setTimeout(() => {
+            if (isOpen) toggleChat();
+            chatWindow.style.transition = '';
+            setTransform(0);
+          }, 230);
+        };
+
         const onStart = (y) => {
           dragging = true;
           hasMoved = false;
           startY = y;
           currentY = y;
           dragBar.style.cursor = 'grabbing';
+          chatWindow.style.transition = '';
         };
 
         const onMove = (y, evt) => {
@@ -899,7 +920,7 @@
           const delta = y - startY;
           if (delta > 0) {
             hasMoved = true;
-            setTransform(Math.min(delta, 160));
+            setTransform(delta);
             if (evt && evt.cancelable) evt.preventDefault();
           }
         };
@@ -909,9 +930,8 @@
           dragging = false;
           dragBar.style.cursor = 'grab';
           const delta = currentY - startY;
-          if (delta > CLOSE_THRESHOLD) {
-            resetTransform();
-            if (isOpen) toggleChat();
+          if (delta > getCloseThreshold()) {
+            closeWithAnimation();
           } else {
             resetTransform();
           }
