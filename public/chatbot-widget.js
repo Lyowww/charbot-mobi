@@ -257,41 +257,15 @@
     messageDiv.appendChild(bubbleDiv);
     messagesContainer.appendChild(messageDiv);
 
-    // Scroll to show the new message at the top when message is added
+    // Scroll to show the new message at the TOP when message is added
     requestAnimationFrame(() => {
       // Get the position of the newly added message
       const messageOffsetTop = messageDiv.offsetTop;
-      
-      // Scroll so the new message appears at the top of the viewport
       messagesContainer.scrollTop = messageOffsetTop;
-      
-      // On mobile, ensure input stays visible after scroll
-      if (isMobileDevice() && document.getElementById('chatbot-input') === document.activeElement) {
-        setTimeout(() => {
-          const inputWrapper = document.querySelector('.chatbot-input-wrapper');
-          const input = document.getElementById('chatbot-input');
-          
-          if (inputWrapper && window.visualViewport && input) {
-            const inputRect = inputWrapper.getBoundingClientRect();
-            const viewportBottom = window.visualViewport.height;
-            
-            // Adjust scroll if input might be hidden, but keep new message visible at top
-            if (inputRect.bottom > viewportBottom - 10) {
-              // Recalculate to ensure new message stays at top
-              const scrollAmount = inputRect.bottom - (viewportBottom - 10);
-              messagesContainer.scrollTop = messageOffsetTop;
-            }
-          }
-          
-          // Final adjustment to ensure new message is at top
-          messagesContainer.scrollTop = messageOffsetTop;
-        }, 100);
-      } else {
-        // Non-mobile or input not focused - scroll new message to top
-        setTimeout(() => {
-          messagesContainer.scrollTop = messageOffsetTop;
-        }, 50);
-      }
+      // Ensure new message is at top after image/render delay
+      setTimeout(() => {
+        messagesContainer.scrollTop = messageOffsetTop;
+      }, 100);
     });
 
     if (pushToArray) {
@@ -526,16 +500,16 @@
       if (overlay) overlay.classList.add('active');
       toggle.style.display = 'none';
       disableBodyScroll();
-      const input = document.getElementById('chatbot-input');
-      if (input) {
-        input.focus();
-        // Select all text for better UX like other chats (in case any value is present)
-        if (typeof input.select === 'function') {
-          input.select();
-        } else if (typeof input.setSelectionRange === 'function') {
-          input.setSelectionRange(0, input.value.length);
-        }
-      }
+      // REMOVE auto focus on input when opening chat
+      // const input = document.getElementById('chatbot-input');
+      // if (input) {
+      //   input.focus();
+      //   if (typeof input.select === 'function') {
+      //     input.select();
+      //   } else if (typeof input.setSelectionRange === 'function') {
+      //     input.setSelectionRange(0, input.value.length);
+      //   }
+      // }
       scrollToBottom();
     } else {
       chatWindow.classList.remove('active');
