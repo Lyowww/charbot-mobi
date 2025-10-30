@@ -324,15 +324,20 @@
       border-radius: 20px;
       border-bottom-left-radius: 6px;
       width: fit-content;
+      backface-visibility: hidden;
+      will-change: transform;
     `;
 
-    // Cleanup previous interval if set
+    // Cleanup previous animations if set
     if (window.typingDotInterval) {
       clearInterval(window.typingDotInterval);
       window.typingDotInterval = null;
     }
+    if (window.typingDotRAF) {
+      cancelAnimationFrame(window.typingDotRAF);
+      window.typingDotRAF = null;
+    }
 
-    // Store dot elements for animation
     const dotEls = [];
     for (let i = 0; i < 3; i++) {
       const span = document.createElement('span');
@@ -342,34 +347,57 @@
         height: 8px;
         background: #fff;
         border-radius: 50%;
-        opacity: 0.6;
-        transform: scale(0.8);
-        transition: all 200ms cubic-bezier(0.4, 0.2, 0.2, 1);
+        opacity: 0.65;
+        transform: scale(0.9);
+        transition: opacity 180ms ease, filter 180ms ease;
+        filter: drop-shadow(0 0 0px rgba(255,255,255,0));
       `;
       indicator.appendChild(span);
       dotEls.push(span);
     }
 
-    // Animate dot queue
-    let activeIdx = 0;
-    function updateDots(idx) {
-      dotEls.forEach((el, i) => {
-        if (i === idx) {
-          el.style.opacity = '1';
-          el.style.background = '#fff';
-          el.style.transform = 'scale(1.5)';
-        } else {
-          el.style.opacity = '0.6';
-          el.style.background = '#fff';
-          el.style.transform = 'scale(0.8)';
-        }
-      });
+    // Smooth queued animation using RAF
+    let startTs = null;
+    const DOT_COUNT = dotEls.length;
+    const CYCLE_MS = 1200; // full cycle duration
+    const BASE_SCALE = 0.9;
+    const MAX_SCALE = 1.6;
+
+    function easeInOutSine(t) {
+      return 0.5 - 0.5 * Math.cos(Math.PI * t);
     }
-    updateDots(activeIdx);
-    window.typingDotInterval = setInterval(() => {
-      activeIdx = (activeIdx + 1) % dotEls.length;
-      updateDots(activeIdx);
-    }, 350);
+
+    function step(ts) {
+      if (!startTs) startTs = ts;
+      const elapsed = (ts - startTs) % CYCLE_MS;
+      const phase = elapsed / CYCLE_MS; // 0..1
+
+      const seg = phase * DOT_COUNT; // 0..3
+      const idx = Math.floor(seg) % DOT_COUNT; // active dot index
+      const local = seg - Math.floor(seg); // 0..1 within active segment
+
+      const activeIntensity = easeInOutSine(local); // 0..1
+
+      for (let i = 0; i < DOT_COUNT; i++) {
+        const el = dotEls[i];
+        if (i === idx) {
+          const scale = BASE_SCALE + (MAX_SCALE - BASE_SCALE) * activeIntensity;
+          const opacity = 0.55 + 0.45 * activeIntensity;
+          const glow = 6 * activeIntensity;
+          el.style.transform = `scale(${scale})`;
+          el.style.opacity = `${opacity}`;
+          el.style.filter = `drop-shadow(0 0 ${glow}px rgba(255,255,255,${0.7 * activeIntensity}))`;
+        } else {
+          el.style.transform = `scale(${BASE_SCALE})`;
+          el.style.opacity = '0.65';
+          el.style.filter = 'drop-shadow(0 0 0px rgba(255,255,255,0))';
+        }
+      }
+
+      window.typingDotRAF = requestAnimationFrame(step);
+    }
+
+    window.typingDotRAF = requestAnimationFrame(step);
 
     typingDiv.appendChild(indicator);
     messagesContainer.appendChild(typingDiv);
@@ -387,6 +415,10 @@
     if (window.typingDotInterval) {
       clearInterval(window.typingDotInterval);
       window.typingDotInterval = null;
+    }
+    if (window.typingDotRAF) {
+      cancelAnimationFrame(window.typingDotRAF);
+      window.typingDotRAF = null;
     }
   }
 
