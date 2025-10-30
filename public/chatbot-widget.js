@@ -122,12 +122,7 @@
             background: white;
           ">
             
-            <div class="message assistant" style="
-              display: flex;
-              flex-direction: column;
-              max-width: 80%;
-              align-self: flex-start;
-            ">
+            <div class="message assistant">
               <div style="
               border-top: 1px solid #eee;
               padding: 12px;
