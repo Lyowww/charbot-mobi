@@ -527,7 +527,15 @@
       toggle.style.display = 'none';
       disableBodyScroll();
       const input = document.getElementById('chatbot-input');
-      if (input) input.focus();
+      if (input) {
+        input.focus();
+        // Select all text for better UX like other chats (in case any value is present)
+        if (typeof input.select === 'function') {
+          input.select();
+        } else if (typeof input.setSelectionRange === 'function') {
+          input.setSelectionRange(0, input.value.length);
+        }
+      }
       scrollToBottom();
     } else {
       chatWindow.classList.remove('active');
