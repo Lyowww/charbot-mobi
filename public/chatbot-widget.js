@@ -299,6 +299,9 @@
     const messagesContainer = document.getElementById('chatbot-messages');
     if (!messagesContainer) return;
 
+    // Prevent duplicate indicators
+    if (document.getElementById('typing-indicator')) return;
+
     const typingDiv = document.createElement('div');
     typingDiv.className = 'message assistant';
     typingDiv.id = 'typing-indicator';
@@ -310,7 +313,7 @@
     `;
 
     const indicator = document.createElement('div');
-    indicator.className = 'typing-indicator';
+    indicator.className = 'typing-indicator queued-indicator';
     indicator.style.cssText = `
       display: flex;
       gap: 6px;
@@ -321,18 +324,50 @@
       width: fit-content;
     `;
 
+    // Cleanup previous interval if set
+    if (window.typingDotInterval) {
+      clearInterval(window.typingDotInterval);
+      window.typingDotInterval = null;
+    }
+
+    // Store dot elements for animation
+    const dotEls = [];
     for (let i = 0; i < 3; i++) {
       const span = document.createElement('span');
+      span.className = 'typing-dot';
       span.style.cssText = `
         width: 8px;
         height: 8px;
-        background: white;
+        background: #fff;
         border-radius: 50%;
-        animation: typing 1.4s infinite;
-        animation-delay: \${i * 0.2}s;
+        opacity: 0.6;
+        transform: scale(0.8);
+        transition: all 200ms cubic-bezier(0.4, 0.2, 0.2, 1);
       `;
       indicator.appendChild(span);
+      dotEls.push(span);
     }
+
+    // Animate dot queue
+    let activeIdx = 0;
+    function updateDots(idx) {
+      dotEls.forEach((el, i) => {
+        if (i === idx) {
+          el.style.opacity = '1';
+          el.style.background = '#fff';
+          el.style.transform = 'scale(1.5)';
+        } else {
+          el.style.opacity = '0.6';
+          el.style.background = '#fff';
+          el.style.transform = 'scale(0.8)';
+        }
+      });
+    }
+    updateDots(activeIdx);
+    window.typingDotInterval = setInterval(() => {
+      activeIdx = (activeIdx + 1) % dotEls.length;
+      updateDots(activeIdx);
+    }, 350);
 
     typingDiv.appendChild(indicator);
     messagesContainer.appendChild(typingDiv);
@@ -346,6 +381,10 @@
     const typingIndicator = document.getElementById('typing-indicator');
     if (typingIndicator) {
       typingIndicator.remove();
+    }
+    if (window.typingDotInterval) {
+      clearInterval(window.typingDotInterval);
+      window.typingDotInterval = null;
     }
   }
 
@@ -1381,7 +1420,6 @@
     const noChrome = !/chrome/i.test(ua) && !/chromium/i.test(ua);
     const isIOS = /iphone|ipad|ipod/i.test(ua);
 
-    const isMac = /macintosh/i.test(ua);
     const hasSafariIndicator = window.safari !== undefined ||
       (hasSafari && noChrome) ||
       isIOS;
