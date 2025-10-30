@@ -20,6 +20,7 @@
         position: fixed;
         right: 0;
         bottom: 0;
+        border-radius: 24px 24px 0 0;
         z-index: 1000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       ">
