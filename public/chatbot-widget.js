@@ -71,6 +71,7 @@
             border-radius: 24px 24px 0 0;
             grid-template-columns: 36px 1fr 36px;
             align-items: center;
+            border-bottom: 1px solid #eee;
           ">
             <div class="chatbot-header-content" style="
               grid-column: 2;
@@ -124,7 +125,6 @@
             
             <div class="message assistant">
               <div style="
-              border-top: 1px solid #eee;
               padding: 12px;
               padding-top: 0px;
               padding-bottom: 0px;
