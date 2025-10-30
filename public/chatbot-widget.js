@@ -42,6 +42,27 @@
           overflow: hidden;
           z-index: 1001;
         ">
+          <!-- Drag Bar (mobile) -->
+          <div id="chatbot-dragbar" style="
+            width: 100%;
+            height: 20px;
+            position: relative;
+            cursor: grab;
+            touch-action: none;
+            display: none;
+            background: transparent;
+          ">
+            <div style="
+              position: absolute;
+              left: 50%;
+              top: 8px;
+              transform: translateX(-50%);
+              width: 42px;
+              height: 4px;
+              border-radius: 4px;
+              background: #e0e0e0;
+            "></div>
+          </div>
           <!-- Header -->
           <div class="chatbot-header" style="
             background: white;
@@ -90,18 +111,6 @@
             </button>
           </div>
 
-          <!-- Terms Notice -->
-          <div class="chatbot-terms-notice" style="
-            background: white;
-            padding: 20px 24px;
-            text-align: center;
-            font-size: 13px;
-            color: #666;
-            line-height: 1.6;
-          ">
-            By engaging in this conversation, you agree<br>to our <a href="#" target="_blank" style="color: #666; text-decoration: underline;">Terms and Conditions</a>.
-          </div>
-
           <!-- Messages Area -->
           <div id="chatbot-messages" style="
             flex: 1;
@@ -112,6 +121,17 @@
             gap: 16px;
             background: white;
           ">
+            <!-- Terms Notice (scrolls with messages) -->
+            <div class="chatbot-terms-notice" style="
+              background: white;
+              padding: 0 0 8px 0;
+              text-align: center;
+              font-size: 13px;
+              color: #666;
+              line-height: 1.6;
+            ">
+              By engaging in this conversation, you agree<br>to our <a href="#" target="_blank" style="color: #666; text-decoration: underline;">Terms and Conditions</a>.
+            </div>
             <div class="message assistant" style="
               display: flex;
               flex-direction: column;
@@ -844,6 +864,82 @@
 
       addStyles();
 
+      // Drag-to-close handlers (mobile)
+      (function setupDragBar(){
+        const chatWindow = document.getElementById('chatbot-window');
+        const dragBar = document.getElementById('chatbot-dragbar');
+        if (!chatWindow || !dragBar) return;
+
+        let startY = 0;
+        let currentY = 0;
+        let dragging = false;
+        let hasMoved = false;
+        const CLOSE_THRESHOLD = 90;
+
+        const setTransform = (y) => {
+          chatWindow.style.transform = `translateY(${Math.max(0, y)}px)`;
+        };
+
+        const resetTransform = () => {
+          chatWindow.style.transition = 'transform 180ms ease-out';
+          setTransform(0);
+          setTimeout(() => { chatWindow.style.transition = ''; }, 200);
+        };
+
+        const onStart = (y) => {
+          dragging = true;
+          hasMoved = false;
+          startY = y;
+          currentY = y;
+          dragBar.style.cursor = 'grabbing';
+        };
+
+        const onMove = (y, evt) => {
+          if (!dragging) return;
+          const delta = y - startY;
+          if (delta > 0) {
+            hasMoved = true;
+            setTransform(Math.min(delta, 160));
+            if (evt && evt.cancelable) evt.preventDefault();
+          }
+        };
+
+        const onEnd = () => {
+          if (!dragging) return;
+          dragging = false;
+          dragBar.style.cursor = 'grab';
+          const delta = currentY - startY;
+          if (delta > CLOSE_THRESHOLD) {
+            resetTransform();
+            if (isOpen) toggleChat();
+          } else {
+            resetTransform();
+          }
+        };
+
+        // Pointer/Mouse
+        dragBar.addEventListener('mousedown', (e) => onStart(e.clientY));
+        window.addEventListener('mousemove', (e) => { currentY = e.clientY; onMove(e.clientY, e); });
+        window.addEventListener('mouseup', onEnd);
+
+        // Touch
+        dragBar.addEventListener('touchstart', (e) => {
+          const t = e.touches[0];
+          onStart(t.clientY);
+        }, { passive: true });
+        dragBar.addEventListener('touchmove', (e) => {
+          const t = e.touches[0];
+          currentY = t.clientY;
+          onMove(t.clientY, e);
+        }, { passive: false });
+        dragBar.addEventListener('touchend', onEnd);
+
+        // Tap to close (no drag)
+        dragBar.addEventListener('click', () => {
+          if (!hasMoved && isOpen) toggleChat();
+        });
+      })();
+
       const storedChatInfo = getStoredChatInfo();
 
       if (storedChatInfo && storedChatInfo.chat_info && (!storedChatInfo.chat_info.user_ip || !storedChatInfo.chat_info.persona)) {
@@ -1456,6 +1552,7 @@
     const chatWindow = document.getElementById('chatbot-window');
     const toggle = document.getElementById('chatbot-toggle');
     const container = document.getElementById('chatbot-widget-container');
+    const dragBar = document.getElementById('chatbot-dragbar');
 
     if (!chatWindow || !toggle || !container) {
       return;
@@ -1470,6 +1567,7 @@
       chatWindow.style.borderRadius = '24px 24px 0 0';
       chatWindow.style.right = '0';
       chatWindow.style.left = '0';
+      if (dragBar) dragBar.style.display = 'block';
 
       toggle.classList.add('mobile');
 
@@ -1481,6 +1579,7 @@
       container.style.right = '0';
       chatWindow.style.width = '420px';
       chatWindow.style.height = '600px';
+      if (dragBar) dragBar.style.display = 'none';
       toggle.classList.remove('mobile');
       const bottomPos = getSafariBottomPosition();
       toggle.style.bottom = bottomPos + 'px';
