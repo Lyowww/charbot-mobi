@@ -349,22 +349,24 @@
         border-radius: 50%;
         opacity: 0.65;
         transform: scale(0.9);
-        transition: opacity 180ms ease, filter 180ms ease;
+        will-change: transform, opacity, filter;
+        transition: opacity 150ms linear;
         filter: drop-shadow(0 0 0px rgba(255,255,255,0));
       `;
       indicator.appendChild(span);
       dotEls.push(span);
     }
 
-    // Smooth queued animation using RAF
+    // Ultra-smooth queued animation using continuous per-dot easing
     let startTs = null;
     const DOT_COUNT = dotEls.length;
-    const CYCLE_MS = 1200; // full cycle duration
+    const CYCLE_MS = 1500; // full cycle duration, slower for smoother motion
     const BASE_SCALE = 0.9;
-    const MAX_SCALE = 1.6;
+    const MAX_SCALE = 1.65;
 
-    function easeInOutSine(t) {
-      return 0.5 - 0.5 * Math.cos(Math.PI * t);
+    // Smoothstep easing
+    function smoothstep(t) {
+      return t * t * (3 - 2 * t);
     }
 
     function step(ts) {
@@ -372,26 +374,25 @@
       const elapsed = (ts - startTs) % CYCLE_MS;
       const phase = elapsed / CYCLE_MS; // 0..1
 
-      const seg = phase * DOT_COUNT; // 0..3
-      const idx = Math.floor(seg) % DOT_COUNT; // active dot index
-      const local = seg - Math.floor(seg); // 0..1 within active segment
-
-      const activeIntensity = easeInOutSine(local); // 0..1
-
       for (let i = 0; i < DOT_COUNT; i++) {
         const el = dotEls[i];
-        if (i === idx) {
-          const scale = BASE_SCALE + (MAX_SCALE - BASE_SCALE) * activeIntensity;
-          const opacity = 0.55 + 0.45 * activeIntensity;
-          const glow = 6 * activeIntensity;
-          el.style.transform = `scale(${scale})`;
-          el.style.opacity = `${opacity}`;
-          el.style.filter = `drop-shadow(0 0 ${glow}px rgba(255,255,255,${0.7 * activeIntensity}))`;
-        } else {
-          el.style.transform = `scale(${BASE_SCALE})`;
-          el.style.opacity = '0.65';
-          el.style.filter = 'drop-shadow(0 0 0px rgba(255,255,255,0))';
-        }
+        // Phase offset per dot for queued effect
+        let local = phase - i / DOT_COUNT;
+        // Wrap to [0,1)
+        local = local - Math.floor(local);
+
+        // Create a bell-shaped emphasis around 0 (active window)
+        // Triangle wave mapped to 0..1, then eased for smooth peak
+        const tri = 1 - Math.abs(local - 0.5) * 2; // 0..1 with peak at 0.5
+        const intensity = smoothstep(Math.max(0, tri)); // 0..1
+
+        const scale = BASE_SCALE + (MAX_SCALE - BASE_SCALE) * intensity;
+        const opacity = 0.55 + 0.45 * intensity;
+        const glow = 6 * intensity;
+
+        el.style.transform = `scale(${scale})`;
+        el.style.opacity = `${opacity}`;
+        el.style.filter = `drop-shadow(0 0 ${glow}px rgba(255,255,255,${0.7 * intensity}))`;
       }
 
       window.typingDotRAF = requestAnimationFrame(step);
