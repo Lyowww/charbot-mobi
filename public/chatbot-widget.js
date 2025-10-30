@@ -1668,4 +1668,11 @@
     window.ChatbotWidget.init();
   }
 
+  // Add ESC key to close chat
+  document.addEventListener('keydown', function (event) {
+    if ((event.key === 'Escape' || event.key === 'Esc' || event.keyCode === 27) && isOpen) {
+      toggleChat();
+    }
+  });
+
 })();
