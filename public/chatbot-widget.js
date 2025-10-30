@@ -10,6 +10,7 @@
   let currentPage = 1;
   let isLoadingHistory = false;
   let chatPersona = null;
+  let userIp = null;
 
   function createWidgetHTML() {
     return `
@@ -441,6 +442,8 @@
     }, 150);
 
     const sendButton = document.getElementById('chatbot-send');
+    // Disable input and send button while awaiting backend response
+    if (input) input.disabled = true;
     if (sendButton) sendButton.disabled = true;
 
     showTypingIndicator();
@@ -507,6 +510,12 @@
       setTimeout(() => {
         scrollToBottom();
       }, 200);
+    } finally {
+      // Re-enable input; keep send disabled until user types again
+      const inputEl = document.getElementById('chatbot-input');
+      const sendBtnEl = document.getElementById('chatbot-send');
+      if (inputEl) inputEl.disabled = false;
+      if (sendBtnEl) sendBtnEl.disabled = true;
     }
   }
 
@@ -671,6 +680,16 @@
     }
   }
 
+  async function getUserIp() {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      return null;
+    }
+  }
+
   async function generateToken() {
     const currentChatKey = getchatKey();
 
@@ -681,10 +700,19 @@
     try {
       const deviceId = getOrCreateDeviceId();
       const platform = detectPlatform();
-
+      userIp = await getUserIp();
+      if (!userIp) {
+        addMessage('Sorry, I encountered an error. Please try again. IP address not found.', 'bot');
+        setTimeout(() => {
+          scrollToBottom();
+        }, 200);
+        hideTypingIndicator();
+        return;
+      }
       const requestBody = {
         "chat_key": chatKey,
         "persona": chatPersona,
+        "user_ip": userIp,
         "device_info": {
           "device_id": deviceId,
           "platform": platform
@@ -857,11 +885,8 @@
 
       const storedChatInfo = getStoredChatInfo();
 
-      // Check if persona field exists in storedChatInfo.chat_info
-      if (storedChatInfo && storedChatInfo.chat_info && !storedChatInfo.chat_info.persona) {
-        // Clear all local storage if persona is missing
+      if (storedChatInfo && storedChatInfo.chat_info && !storedChatInfo.chat_info.persona && !storedChatInfo.chat_info.user_ip) {
         localStorage.clear();
-        // Regenerate token with persona
         generateToken();
       } else if (storedChatInfo && storedChatInfo.chat_info) {
         fetchChatHistory();
