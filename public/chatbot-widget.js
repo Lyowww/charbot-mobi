@@ -121,7 +121,14 @@
             gap: 16px;
             background: white;
           ">
-            <div class="chatbot-terms-notice" style="
+            
+            <div class="message assistant" style="
+              display: flex;
+              flex-direction: column;
+              max-width: 80%;
+              align-self: flex-start;
+            ">
+              <div style="
               border-top: 1px solid #eee;
               padding: 12px;
               padding-top: 0px;
@@ -132,13 +139,6 @@
             ">
               By engaging in this conversation, you agree<br>to our <a href="/terms-and-conditions" target="_blank" style="color: #1a73e8; text-decoration: underline;">Terms and Conditions</a>.
             </div>
-            <div class="message assistant" style="
-              display: flex;
-              flex-direction: column;
-              max-width: 80%;
-              align-self: flex-start;
-            ">
-              
             </div>
           </div>
 
@@ -309,10 +309,10 @@
       if (messages.length > 0) {
         const lastMessage = messages[messages.length - 1];
         const messageOffsetTop = lastMessage.offsetTop;
-        
+
         requestAnimationFrame(() => {
           messagesContainer.scrollTop = messageOffsetTop;
-          
+
           setTimeout(() => {
             messagesContainer.scrollTop = messageOffsetTop;
           }, 50);
@@ -510,7 +510,7 @@
       } else {
         addMessage('Sorry, I encountered an error. Please try again.', 'bot');
       }
-      
+
       // Ensure scroll to show new message at top after bot response
       setTimeout(() => {
         scrollToBottom();
@@ -531,9 +531,9 @@
 
   function disableBodyScroll() {
     const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
-    
+
     document.body.dataset.scrollY = scrollY.toString();
-    
+
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
@@ -541,7 +541,7 @@
     document.body.style.width = '100%';
     document.body.style.left = '0';
     document.body.style.right = '0';
-    
+
     if (isMobileDevice()) {
       document.body.style.touchAction = 'none';
       document.documentElement.style.touchAction = 'none';
@@ -551,7 +551,7 @@
   function enableBodyScroll() {
     const scrollY = document.body.dataset.scrollY || '0';
     const scrollPosition = parseInt(scrollY, 10);
-    
+
     document.body.style.overflow = '';
     document.documentElement.style.overflow = '';
     document.body.style.position = '';
@@ -559,16 +559,16 @@
     document.body.style.width = '';
     document.body.style.left = '';
     document.body.style.right = '';
-    
+
     if (isMobileDevice()) {
       document.body.style.touchAction = '';
       document.documentElement.style.touchAction = '';
     }
-    
+
     if (scrollPosition > 0) {
       window.scrollTo(0, scrollPosition);
     }
-    
+
     delete document.body.dataset.scrollY;
   }
 
@@ -874,7 +874,7 @@
       addStyles();
 
       // Drag-to-close handlers (mobile)
-      (function setupDragBar(){
+      (function setupDragBar() {
         const chatWindow = document.getElementById('chatbot-window');
         const dragBar = document.getElementById('chatbot-dragbar');
         if (!chatWindow || !dragBar) return;
@@ -1002,11 +1002,11 @@
 
         if (isMobileDevice()) {
           let scrollPositionBeforeFocus = 0;
-          
+
           let isKeyboardVisible = false;
           let initialViewportHeight = window.innerHeight;
-          
-          const preventScroll = function(e) {
+
+          const preventScroll = function (e) {
             const inputWrapper = input ? input.closest('.chatbot-input-wrapper') : null;
             if (e.target === input || input.contains(e.target) || (inputWrapper && inputWrapper.contains(e.target))) {
               return true;
@@ -1018,7 +1018,7 @@
             }
             return true;
           };
-          
+
           let preventScrollHandlers = {
             documentTouchmove: null,
             documentWheel: null,
@@ -1031,16 +1031,16 @@
             messagesWheel: null,
             messagesScroll: null
           };
-          
+
           const applyKeyboardRestrictions = () => {
             if (isKeyboardVisible) return;
-            
+
             scrollPositionBeforeFocus = window.pageYOffset || window.scrollY || document.documentElement.scrollTop;
             isKeyboardVisible = true;
-            
+
             const chatWindow = document.getElementById('chatbot-window');
             const messagesContainer = document.getElementById('chatbot-messages');
-            
+
             document.body.style.position = 'fixed';
             document.body.style.top = `-${scrollPositionBeforeFocus}px`;
             document.body.style.width = '100%';
@@ -1048,19 +1048,19 @@
             document.body.style.left = '0';
             document.body.style.right = '0';
             document.documentElement.style.overflow = 'hidden';
-            
+
             if (messagesContainer) {
               messagesContainerScrollBeforeFocus = messagesContainer.scrollTop;
               messagesContainer.style.overflow = 'hidden';
               messagesContainer.style.touchAction = 'none';
               messagesContainer.style.overscrollBehavior = 'none';
             }
-            
+
             if (chatWindow) {
               chatWindow.classList.add('keyboard-visible');
               chatWindow.style.overflow = 'hidden';
               chatWindow.style.touchAction = 'none';
-              
+
               const updateChatHeight = () => {
                 if (window.visualViewport) {
                   const viewportHeight = window.visualViewport.height;
@@ -1068,29 +1068,29 @@
                   chatWindow.style.maxHeight = viewportHeight + 'px';
                 }
               };
-              
+
               updateChatHeight();
               setTimeout(updateChatHeight, 300);
             }
-            
+
             preventScrollHandlers.documentTouchmove = preventScroll;
             preventScrollHandlers.documentWheel = preventScroll;
             preventScrollHandlers.documentScroll = preventScroll;
             preventScrollHandlers.windowScroll = preventScroll;
-            
+
             document.addEventListener('touchmove', preventScroll, { passive: false });
             document.addEventListener('wheel', preventScroll, { passive: false });
             document.addEventListener('scroll', preventScroll, { passive: false });
             window.addEventListener('scroll', preventScroll, { passive: false });
           };
-          
+
           const removeKeyboardRestrictions = () => {
             if (!isKeyboardVisible) return;
-            
+
             isKeyboardVisible = false;
             const chatWindow = document.getElementById('chatbot-window');
             const messagesContainer = document.getElementById('chatbot-messages');
-            
+
             if (preventScrollHandlers.documentTouchmove) {
               document.removeEventListener('touchmove', preventScrollHandlers.documentTouchmove);
             }
@@ -1103,14 +1103,14 @@
             if (preventScrollHandlers.windowScroll) {
               window.removeEventListener('scroll', preventScrollHandlers.windowScroll);
             }
-            
+
             if (messagesContainer) {
               messagesContainer.style.overflow = 'auto';
               messagesContainer.style.touchAction = 'pan-y';
               messagesContainer.style.overscrollBehavior = 'contain';
               messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
-            
+
             if (chatWindow) {
               chatWindow.classList.remove('keyboard-visible');
               chatWindow.style.height = '80vh';
@@ -1118,7 +1118,7 @@
               chatWindow.style.overflow = '';
               chatWindow.style.touchAction = '';
             }
-            
+
             const scrollY = document.body.style.top;
             document.body.style.position = '';
             document.body.style.top = '';
@@ -1127,12 +1127,12 @@
             document.body.style.left = '';
             document.body.style.right = '';
             document.documentElement.style.overflow = '';
-            
+
             if (scrollY) {
               const scrollPosition = parseInt(scrollY.replace('-', '') || '0');
               window.scrollTo(0, scrollPosition);
             }
-            
+
             preventScrollHandlers = {
               documentTouchmove: null,
               documentWheel: null,
@@ -1146,10 +1146,10 @@
               messagesScroll: null
             };
           };
-          
-          input.addEventListener('focus', function(e) {
+
+          input.addEventListener('focus', function (e) {
             initialViewportHeight = window.innerHeight;
-            
+
             setTimeout(() => {
               if (document.activeElement === input && window.visualViewport) {
                 const currentHeight = window.visualViewport.height;
@@ -1160,7 +1160,7 @@
             }, 200);
           });
 
-          input.addEventListener('blur', function() {
+          input.addEventListener('blur', function () {
             setTimeout(() => {
               if (isMobileDevice()) {
                 removeKeyboardRestrictions();
@@ -1170,35 +1170,35 @@
 
           if (window.visualViewport) {
             let lastViewportHeight = window.visualViewport.height;
-            
-            window.visualViewport.addEventListener('resize', function() {
+
+            window.visualViewport.addEventListener('resize', function () {
               const chatWindow = document.getElementById('chatbot-window');
               const input = document.getElementById('chatbot-input');
-              
+
               if (isMobileDevice() && chatWindow) {
                 const currentViewportHeight = window.visualViewport.height;
                 const isInputFocused = document.activeElement === input;
-                
+
                 if (currentViewportHeight < lastViewportHeight && isInputFocused) {
                   applyKeyboardRestrictions();
                 }
-                
+
                 if (currentViewportHeight > lastViewportHeight && !isInputFocused && isKeyboardVisible) {
                   removeKeyboardRestrictions();
                 }
-                
+
                 lastViewportHeight = currentViewportHeight;
               }
             });
           }
-          
-          input.addEventListener('touchstart', function(e) {
+
+          input.addEventListener('touchstart', function (e) {
             e.stopPropagation();
           });
-          
+
           const inputWrapper = input.closest('.chatbot-input-wrapper');
           if (inputWrapper) {
-            inputWrapper.addEventListener('touchmove', function(e) {
+            inputWrapper.addEventListener('touchmove', function (e) {
               if (e.target !== input) {
                 e.stopPropagation();
               }
@@ -1660,7 +1660,7 @@
     const autoInitDisabled = targetScript.dataset.autoInit === 'false';
     shouldAutoInit = hasChatUrl && !autoInitDisabled;
   }
-  if (shouldAutoInit) { 
+  if (shouldAutoInit) {
     window.ChatbotWidget.init();
   }
 
