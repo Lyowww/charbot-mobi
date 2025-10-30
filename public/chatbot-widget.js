@@ -45,6 +45,7 @@
             background: white;
             padding: 24px;
             display: grid;
+            border-radius: 24px 24px 0 0;
             grid-template-columns: 36px 1fr 36px;
             align-items: center;
           ">
