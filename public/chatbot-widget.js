@@ -121,18 +121,14 @@
             gap: 16px;
             background: white;
           ">
-            <!-- Terms Notice (scrolls with messages) -->
             <div class="chatbot-terms-notice" style="
-              position: sticky;
-              bottom: 0;
-              background: #f9f9f9;
               border-top: 1px solid #eee;
-              padding: 12px 0 8px 0;
+              padding: 12px;
+              padding-top: 0px;
+              padding-bottom: 0px;
               text-align: center;
               font-size: 14px;
               color: #444;
-              line-height: 1.7;
-              z-index: 10;
             ">
               By engaging in this conversation, you agree<br>to our <a href="/terms-and-conditions" target="_blank" style="color: #1a73e8; text-decoration: underline;">Terms and Conditions</a>.
             </div>
