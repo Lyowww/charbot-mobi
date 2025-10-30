@@ -123,14 +123,18 @@
           ">
             <!-- Terms Notice (scrolls with messages) -->
             <div class="chatbot-terms-notice" style="
-              background: white;
-              padding: 0 0 8px 0;
+              position: sticky;
+              bottom: 0;
+              background: #f9f9f9;
+              border-top: 1px solid #eee;
+              padding: 12px 0 8px 0;
               text-align: center;
-              font-size: 13px;
-              color: #666;
-              line-height: 1.6;
+              font-size: 14px;
+              color: #444;
+              line-height: 1.7;
+              z-index: 10;
             ">
-              By engaging in this conversation, you agree<br>to our <a href="#" target="_blank" style="color: #666; text-decoration: underline;">Terms and Conditions</a>.
+              By engaging in this conversation, you agree<br>to our <a href="/terms-and-conditions" target="_blank" style="color: #1a73e8; text-decoration: underline;">Terms and Conditions</a>.
             </div>
             <div class="message assistant" style="
               display: flex;
