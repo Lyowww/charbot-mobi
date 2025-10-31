@@ -258,13 +258,12 @@
     const messagesContainer = document.getElementById('chatbot-messages');
     if (!messagesContainer) return;
 
-    // Replace backend limit error with a friendlier message
     if (
       sender === 'bot' &&
       typeof text === 'string' &&
       text.trim() === 'Error user hits the limit'
     ) {
-      text = 'user limit has expired wait a minute for again talking';
+      text = 'Taking a short pause. You can send more in 30 seconds.';
     }
 
     const messageDiv = document.createElement('div');
