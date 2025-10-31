@@ -49,7 +49,6 @@
             position: relative;
             cursor: grab;
             touch-action: none;
-            display: none;
             background: transparent;
           ">
             <div style="
