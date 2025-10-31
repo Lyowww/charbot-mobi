@@ -165,6 +165,7 @@
                   outline: none;
                   background: transparent;
                   color: black;
+                  padding: 8px 0;
                 "
                 role="textbox"
                 aria-multiline="true"
