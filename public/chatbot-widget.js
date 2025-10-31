@@ -1590,6 +1590,7 @@
     const toggle = document.getElementById('chatbot-toggle');
     const container = document.getElementById('chatbot-widget-container');
     const dragBar = document.getElementById('chatbot-dragbar');
+    if (dragBar) dragBar.style.display = 'block';
 
     if (!chatWindow || !toggle || !container) {
       return;
@@ -1604,7 +1605,6 @@
       chatWindow.style.borderRadius = '24px 24px 0 0';
       chatWindow.style.right = '0';
       chatWindow.style.left = '0';
-      if (dragBar) dragBar.style.display = 'block';
 
       toggle.classList.add('mobile');
 
@@ -1616,7 +1616,6 @@
       container.style.right = '0';
       chatWindow.style.width = '420px';
       chatWindow.style.height = '600px';
-      if (dragBar) dragBar.style.display = 'none';
       toggle.classList.remove('mobile');
       const bottomPos = getSafariBottomPosition();
       toggle.style.bottom = bottomPos + 'px';
