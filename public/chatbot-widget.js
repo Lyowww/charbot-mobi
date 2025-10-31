@@ -193,6 +193,7 @@
                   flex-shrink: 0;
                   width: 30px;
                   height: 30px;
+                  padding: 8px 0;
                 "
                 tabindex="0"
                 role="button"
