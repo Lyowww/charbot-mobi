@@ -56,8 +56,8 @@
               left: 50%;
               top: 10px;
               transform: translateX(-50%);
-              width: 42px;
-              height: 4px;
+              width: 36px;
+              height: 5px;
               border-radius: 4px;
               background: #e0e0e0;
             "></div>
@@ -65,9 +65,7 @@
           <!-- Header -->
           <div class="chatbot-header" style="
             background: white;
-            padding: 24px;
-            padding-bottom: 0px;
-            padding-top: 0px;
+            padding: 10px 24px;
             display: grid;
             border-radius: 24px 24px 0 0;
             grid-template-columns: 36px 1fr 36px;
