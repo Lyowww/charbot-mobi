@@ -516,7 +516,18 @@
       const result = await response.json();
 
       hideTypingIndicator();
-      addMessage(result.data.messages.text ? result.data.messages.text : result.message, 'bot');
+      
+      // Handle different response structures
+      let messageText = '';
+      if (result.data && result.data.messages && result.data.messages.text) {
+        messageText = result.data.messages.text;
+      } else if (result.message) {
+        messageText = result.message;
+      } else {
+        messageText = 'Sorry, I encountered an error. Please try again.';
+      }
+      
+      addMessage(messageText, 'bot');
       setTimeout(() => {
         scrollToBottom();
       }, 200);
