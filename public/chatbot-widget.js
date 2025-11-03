@@ -525,7 +525,7 @@
       }, 200);
     } catch (error) {
       hideTypingIndicator();
-      generateToken();
+      addMessage('Sorry, I encountered an error. Please try again.', 'bot');
       setTimeout(() => {
         scrollToBottom();
       }, 200);
@@ -812,6 +812,8 @@
 
       return result;
     } catch (error) {
+      generateToken();
+      fetchChatHistory(page, ajustar, append);
       return null;
     } finally {
       isLoadingHistory = false;
