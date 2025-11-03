@@ -525,7 +525,7 @@
       }, 200);
     } catch (error) {
       hideTypingIndicator();
-      addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+      generateToken();
       setTimeout(() => {
         scrollToBottom();
       }, 200);
