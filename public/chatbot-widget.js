@@ -517,13 +517,9 @@
 
       hideTypingIndicator();
 
-      if (result && result.data && result.data.messages && result.data.messages.text) {
-        addMessage(result.data.messages.text, 'bot');
-      } else {
-        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
-      }
+      addMessage(result.data.messages.text, 'bot');
 
-      // Ensure scroll to show new message at top after bot response
+
       setTimeout(() => {
         scrollToBottom();
       }, 200);
