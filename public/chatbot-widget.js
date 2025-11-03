@@ -516,8 +516,7 @@
       const result = await response.json();
 
       hideTypingIndicator();
-      console.log(result);
-      addMessage(result.data.messages.text || result.data.message || result.message, 'bot');
+      addMessage(result.data.messages.text ? result.data.messages.text : result.message, 'bot');
       setTimeout(() => {
         scrollToBottom();
       }, 200);
