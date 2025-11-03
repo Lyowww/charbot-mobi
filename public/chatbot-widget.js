@@ -517,9 +517,7 @@
 
       hideTypingIndicator();
 
-      addMessage(result.data.messages.text, 'bot');
-
-
+      addMessage(result.data.messages.text || result.data.message || result.message, 'bot');
       setTimeout(() => {
         scrollToBottom();
       }, 200);
