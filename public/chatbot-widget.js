@@ -983,14 +983,28 @@
         });
       })();
 
-      const storedChatInfo = getStoredChatInfo();
+      const storedChatInfo = getStoredChatInfo()
+
+      function isTokenExpired(chatInfo) {
+        if (!chatInfo || !chatInfo.created_at) {
+          return true
+        }
+        const createdAt = new Date(chatInfo.created_at)
+        const now = new Date()
+        const daysDiff = (now - createdAt) / (1000 * 60 * 60 * 24)
+        return daysDiff >= 2
+      }
 
       if (storedChatInfo && storedChatInfo.chat_info && (!storedChatInfo.chat_info.user_ip || !storedChatInfo.chat_info.persona)) {
-        generateToken();
+        generateToken()
       } else if (storedChatInfo && storedChatInfo.chat_info) {
-        fetchChatHistory();
+        if (isTokenExpired(storedChatInfo.chat_info)) {
+          generateToken()
+        } else {
+          fetchChatHistory()
+        }
       } else {
-        generateToken();
+        generateToken()
       }
 
       const toggle = document.getElementById('chatbot-toggle');
