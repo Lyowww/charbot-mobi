@@ -130,7 +130,7 @@
               font-size: 13px;
               color: #444;
             ">
-              By engaging in this conversation, you agree<br>to our <a href="#" target="_blank" style="color: black; text-decoration: underline;">Terms and Conditions</a>.
+              By engaging in this conversation, you agree<br>to our <a href="https://moby.host/terms" target="_blank" style="color: black; text-decoration: underline;">Terms and Conditions</a>.
             </div>
             </div>
           </div>
