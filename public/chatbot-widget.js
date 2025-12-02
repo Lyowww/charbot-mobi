@@ -1093,16 +1093,14 @@
 
           const updateChatWindowKeyboardOffset = () => {
             if (!isMobileDevice()) return;
-            if (!window.visualViewport) return;
-
             const chatWindow = document.getElementById('chatbot-window');
             if (!chatWindow) return;
 
             const keyboardOffset = getKeyboardOffset();
             if (keyboardOffset > 0) {
-              chatWindow.style.bottom = keyboardOffset + 'px';
+              chatWindow.style.transform = `translate3d(0, -${keyboardOffset}px, 0)`;
             } else {
-              chatWindow.style.bottom = '0';
+              chatWindow.style.transform = '';
             }
           };
 
@@ -1114,7 +1112,15 @@
               messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
 
-            updateChatWindowKeyboardOffset();
+            requestAnimationFrame(() => {
+              updateChatWindowKeyboardOffset();
+            });
+            setTimeout(() => {
+              updateChatWindowKeyboardOffset();
+            }, 120);
+            setTimeout(() => {
+              updateChatWindowKeyboardOffset();
+            }, 320);
           };
 
           const applyKeyboardRestrictions = () => {
@@ -1145,6 +1151,7 @@
               chatWindow.classList.add('keyboard-visible');
               chatWindow.style.overflow = 'hidden';
               chatWindow.style.touchAction = 'none';
+              chatWindow.style.transition = 'transform 0.25s ease-out, height 0.2s ease-out';
 
               const updateChatHeight = () => {
                 if (window.visualViewport) {
@@ -1199,11 +1206,12 @@
 
             if (chatWindow) {
               chatWindow.classList.remove('keyboard-visible');
-              chatWindow.style.height = '80vh';
-              chatWindow.style.maxHeight = '80vh';
+              chatWindow.style.height = '';
+              chatWindow.style.maxHeight = '';
               chatWindow.style.overflow = '';
               chatWindow.style.touchAction = '';
-              chatWindow.style.bottom = '0';
+              chatWindow.style.transform = '';
+              chatWindow.style.transition = '';
             }
 
             const scrollY = document.body.style.top;
