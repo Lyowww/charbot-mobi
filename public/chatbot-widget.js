@@ -1071,40 +1071,76 @@
             const chatWindow = document.getElementById('chatbot-window');
             const messagesContainer = document.getElementById('chatbot-messages');
             
-            if (inputWrapper && chatWindow && window.visualViewport) {
-              // Use scrollIntoView to bring input into view
-              input.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center',
-                inline: 'nearest'
-              });
-              
-              // After a delay, ensure input is positioned correctly above keyboard
-              setTimeout(() => {
-                if (window.visualViewport && document.activeElement === input) {
-                  const inputRect = input.getBoundingClientRect();
+            if (!inputWrapper || !chatWindow) return;
+            
+            // Focus the input first
+            if (document.activeElement !== input) {
+              input.focus();
+            }
+            
+            // Use multiple requestAnimationFrame calls to ensure DOM updates are complete
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                if (window.visualViewport) {
                   const viewportHeight = window.visualViewport.height;
-                  const viewportTop = window.visualViewport.offsetTop;
+                  const viewportTop = window.visualViewport.offsetTop || 0;
+                  const inputRect = inputWrapper.getBoundingClientRect();
+                  const inputBottom = inputRect.bottom;
                   const visibleBottom = viewportTop + viewportHeight;
                   
-                  // If input is too close to bottom or below viewport, adjust
-                  if (inputRect.bottom > visibleBottom - 30) {
-                    // Scroll messages container to make room for input
-                    if (messagesContainer) {
-                      const scrollAmount = inputRect.bottom - (visibleBottom - 30);
-                      messagesContainer.scrollTop = Math.max(0, messagesContainer.scrollTop + scrollAmount);
-                    }
-                    
-                    // Also try scrolling the input into view again
+                  // Calculate if input needs to be scrolled into view
+                  const padding = 30;
+                  const targetBottom = visibleBottom - padding;
+                  
+                  if (inputBottom > targetBottom) {
+                    // Input is below the visible area, need to scroll
+                    // Use scrollIntoView with end block to position at bottom
                     input.scrollIntoView({ 
                       behavior: 'smooth', 
                       block: 'end',
                       inline: 'nearest'
                     });
+                    
+                    // Also try scrolling the wrapper
+                    inputWrapper.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'end',
+                      inline: 'nearest'
+                    });
+                    
+                    // Double check after a delay and adjust if needed
+                    setTimeout(() => {
+                      const newInputRect = inputWrapper.getBoundingClientRect();
+                      const newInputBottom = newInputRect.bottom;
+                      const newVisibleBottom = (window.visualViewport.offsetTop || 0) + window.visualViewport.height;
+                      
+                      if (newInputBottom > newVisibleBottom - padding) {
+                        // Still not visible, scroll messages container to make room
+                        if (messagesContainer) {
+                          const adjustment = newInputBottom - (newVisibleBottom - padding);
+                          messagesContainer.scrollTop = Math.max(0, messagesContainer.scrollTop + adjustment);
+                        }
+                      }
+                    }, 200);
+                  } else {
+                    // Input is already visible, but ensure it's focused
+                    input.focus();
                   }
+                } else {
+                  // Fallback if visualViewport is not available
+                  input.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'end',
+                    inline: 'nearest'
+                  });
+                  inputWrapper.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'end',
+                    inline: 'nearest'
+                  });
                 }
-              }, 300);
-            }
+              });
+            });
           };
 
           const applyKeyboardRestrictions = () => {
@@ -1231,18 +1267,22 @@
             // Scroll input into view immediately
             scrollInputIntoView();
 
+            // Wait for keyboard to appear and then adjust
             setTimeout(() => {
-              if (document.activeElement === input && window.visualViewport) {
-                const currentHeight = window.visualViewport.height;
-                if (currentHeight < initialViewportHeight * 0.75) {
-                  applyKeyboardRestrictions();
-                  // Scroll again after keyboard appears
-                  setTimeout(() => {
-                    scrollInputIntoView();
-                  }, 350);
+              if (document.activeElement === input) {
+                if (window.visualViewport) {
+                  const currentHeight = window.visualViewport.height;
+                  if (currentHeight < initialViewportHeight * 0.75) {
+                    applyKeyboardRestrictions();
+                  }
                 }
+                
+                // Scroll again after keyboard appears
+                setTimeout(() => {
+                  scrollInputIntoView();
+                }, 400);
               }
-            }, 200);
+            }, 300);
           });
 
           input.addEventListener('blur', function () {
@@ -1283,10 +1323,28 @@
 
           input.addEventListener('touchstart', function (e) {
             e.stopPropagation();
+            // Ensure input is focused and scrolled into view on touch
+            if (document.activeElement !== input) {
+              input.focus();
+            }
             // Scroll input into view on touch
             setTimeout(() => {
               scrollInputIntoView();
-            }, 50);
+            }, 100);
+          });
+          
+          // Also handle click for better compatibility
+          input.addEventListener('click', function (e) {
+            if (isMobileDevice()) {
+              // Ensure input is focused
+              if (document.activeElement !== input) {
+                input.focus();
+              }
+              // Scroll input into view
+              setTimeout(() => {
+                scrollInputIntoView();
+              }, 100);
+            }
           });
 
           const inputWrapper = input.closest('.chatbot-input-wrapper');
@@ -1296,6 +1354,21 @@
                 e.stopPropagation();
               }
             }, { passive: false });
+            
+            // Handle click on input wrapper to focus and scroll
+            if (isMobileDevice()) {
+              inputWrapper.addEventListener('click', function (e) {
+                // Only if clicking on the wrapper itself, not the input
+                if (e.target === inputWrapper || e.target.closest('.chatbot-input-container')) {
+                  if (document.activeElement !== input) {
+                    input.focus();
+                  }
+                  setTimeout(() => {
+                    scrollInputIntoView();
+                  }, 100);
+                }
+              });
+            }
           }
         }
       }
