@@ -137,7 +137,7 @@
 
           <!-- Input Area -->
           <div class="chatbot-input-wrapper" style="
-            padding: calc(20px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-right)) 20px calc(24px + env(safe-area-inset-left));
+            padding: calc(10px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-right)) 20px calc(24px + env(safe-area-inset-left));
           ">
             <div class="chatbot-input-container" style="
               display: flex;
@@ -1020,7 +1020,6 @@
         toggle.addEventListener('click', toggleChat);
       }
       if (close) close.addEventListener('click', toggleChat);
-      if (overlay) overlay.addEventListener('click', toggleChat);
       if (send) send.addEventListener('click', handleUserInput);
       if (input) {
         input.addEventListener('input', function () {
@@ -1342,7 +1341,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background: transparent;
         z-index: 1000;
         opacity: 0;
         transition: opacity 0.3s ease-out;
