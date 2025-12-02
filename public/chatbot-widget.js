@@ -1494,7 +1494,7 @@
         .chatbot-input-wrapper {
           touch-action: none;
           flex-shrink: 0;
-          padding-bottom: calc(50px + env(safe-area-inset-bottom)) !important;
+          padding-bottom: calc(70px + env(safe-area-inset-bottom)) !important;
         }
 
         .chatbot-input {
