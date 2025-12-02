@@ -137,7 +137,7 @@
 
           <!-- Input Area -->
           <div class="chatbot-input-wrapper" style="
-            padding: calc(10px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-right)) 20px calc(24px + env(safe-area-inset-left));
+            padding: calc(10px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-right)) 30px calc(24px + env(safe-area-inset-left));
           ">
             <div class="chatbot-input-container" style="
               display: flex;
@@ -605,13 +605,11 @@
       chatWindow.classList.add('active');
       if (overlay) overlay.classList.add('active');
       toggle.style.display = 'none';
-      disableBodyScroll();
       scrollToBottom();
     } else {
       chatWindow.classList.remove('active');
       if (overlay) overlay.classList.remove('active');
       toggle.style.display = 'flex';
-      enableBodyScroll();
     }
   }
 
@@ -1345,11 +1343,13 @@
         z-index: 1000;
         opacity: 0;
         transition: opacity 0.3s ease-out;
+        pointer-events: none;
       }
 
       .chatbot-overlay.active {
         display: block;
         opacity: 1;
+        pointer-events: none;
       }
 
       .chatbot-popup.active {
@@ -1462,6 +1462,7 @@
       @media (max-width: 480px) {
         .chatbot-overlay.active {
           display: block;
+          pointer-events: none;
         }
 
         .chatbot-popup {
