@@ -1083,62 +1083,38 @@
             messagesScroll: null
           };
 
-          const scrollInputIntoView = () => {
-            const inputWrapper = input ? input.closest('.chatbot-input-wrapper') : null;
+          const getKeyboardOffset = () => {
+            if (!window.visualViewport) return 0;
+            const viewport = window.visualViewport;
+            const heightDiff = window.innerHeight - viewport.height;
+            const offset = Math.max(0, heightDiff - (viewport.offsetTop || 0));
+            return Math.max(offset, 0);
+          };
+
+          const updateChatWindowKeyboardOffset = () => {
+            if (!isMobileDevice()) return;
+            if (!window.visualViewport) return;
+
             const chatWindow = document.getElementById('chatbot-window');
-            const messagesContainer = document.getElementById('chatbot-messages');
-            
-            if (!inputWrapper || !chatWindow) return;
-            
-            // Focus the input first
-            if (document.activeElement !== input) {
-              input.focus();
+            if (!chatWindow) return;
+
+            const keyboardOffset = getKeyboardOffset();
+            if (keyboardOffset > 0) {
+              chatWindow.style.bottom = keyboardOffset + 'px';
+            } else {
+              chatWindow.style.bottom = '0';
             }
-            
-            // Wait for DOM to settle, then check and adjust
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                if (!window.visualViewport) return;
-                
-                const viewportHeight = window.visualViewport.height;
-                const viewportTop = window.visualViewport.offsetTop || 0;
-                const inputRect = inputWrapper.getBoundingClientRect();
-                const inputBottom = inputRect.bottom;
-                const visibleBottom = viewportTop + viewportHeight;
-                
-                // Padding from bottom of viewport
-                const padding = 20;
-                const targetBottom = visibleBottom - padding;
-                
-                // Only adjust if input is actually below the target position
-                if (inputBottom > targetBottom) {
-                  // Calculate how much we need to adjust
-                  const adjustment = inputBottom - targetBottom;
-                  
-                  // Scroll messages container to make room for input
-                  // This keeps the chat window stable while moving content up
-                  if (messagesContainer) {
-                    const currentScroll = messagesContainer.scrollTop;
-                    messagesContainer.scrollTop = currentScroll + adjustment;
-                  }
-                  
-                  // Verify after a short delay
-                  setTimeout(() => {
-                    const newInputRect = inputWrapper.getBoundingClientRect();
-                    const newInputBottom = newInputRect.bottom;
-                    const newVisibleBottom = (window.visualViewport.offsetTop || 0) + window.visualViewport.height;
-                    
-                    // Fine-tune if still not perfect
-                    if (newInputBottom > newVisibleBottom - padding) {
-                      const fineAdjustment = newInputBottom - (newVisibleBottom - padding);
-                      if (messagesContainer && fineAdjustment > 0) {
-                        messagesContainer.scrollTop = messagesContainer.scrollTop + fineAdjustment;
-                      }
-                    }
-                  }, 150);
-                }
-              });
-            });
+          };
+
+          const scrollInputIntoView = () => {
+            if (!isMobileDevice()) return;
+
+            const messagesContainer = document.getElementById('chatbot-messages');
+            if (messagesContainer) {
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            updateChatWindowKeyboardOffset();
           };
 
           const applyKeyboardRestrictions = () => {
@@ -1175,9 +1151,7 @@
                   const viewportHeight = window.visualViewport.height;
                   chatWindow.style.height = viewportHeight + 'px';
                   chatWindow.style.maxHeight = viewportHeight + 'px';
-                  
-                  // Ensure input stays above keyboard
-                  scrollInputIntoView();
+                  updateChatWindowKeyboardOffset();
                 }
               };
 
@@ -1229,6 +1203,7 @@
               chatWindow.style.maxHeight = '80vh';
               chatWindow.style.overflow = '';
               chatWindow.style.touchAction = '';
+              chatWindow.style.bottom = '0';
             }
 
             const scrollY = document.body.style.top;
@@ -1312,6 +1287,13 @@
                 }
 
                 lastViewportHeight = currentViewportHeight;
+                updateChatWindowKeyboardOffset();
+              }
+            });
+
+            window.visualViewport.addEventListener('scroll', function () {
+              if (isMobileDevice()) {
+                updateChatWindowKeyboardOffset();
               }
             });
           }
