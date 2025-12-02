@@ -1552,6 +1552,12 @@
         scrollbar-width: thin;
         scrollbar-color: #d0d0d0 transparent;
       }
+
+      @media (max-width: 1279px) {
+        .chatbot-input-wrapper {
+          padding-bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+        }
+      }
     
       .chatbot-toggle-button{
         position: fixed;
