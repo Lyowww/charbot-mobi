@@ -1066,6 +1066,47 @@
             messagesScroll: null
           };
 
+          const scrollInputIntoView = () => {
+            const inputWrapper = input ? input.closest('.chatbot-input-wrapper') : null;
+            const chatWindow = document.getElementById('chatbot-window');
+            const messagesContainer = document.getElementById('chatbot-messages');
+            
+            if (inputWrapper && chatWindow && window.visualViewport) {
+              // Use scrollIntoView to bring input into view
+              input.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
+              });
+              
+              // After a delay, ensure input is positioned correctly above keyboard
+              setTimeout(() => {
+                if (window.visualViewport && document.activeElement === input) {
+                  const inputRect = input.getBoundingClientRect();
+                  const viewportHeight = window.visualViewport.height;
+                  const viewportTop = window.visualViewport.offsetTop;
+                  const visibleBottom = viewportTop + viewportHeight;
+                  
+                  // If input is too close to bottom or below viewport, adjust
+                  if (inputRect.bottom > visibleBottom - 30) {
+                    // Scroll messages container to make room for input
+                    if (messagesContainer) {
+                      const scrollAmount = inputRect.bottom - (visibleBottom - 30);
+                      messagesContainer.scrollTop = Math.max(0, messagesContainer.scrollTop + scrollAmount);
+                    }
+                    
+                    // Also try scrolling the input into view again
+                    input.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'end',
+                      inline: 'nearest'
+                    });
+                  }
+                }
+              }, 300);
+            }
+          };
+
           const applyKeyboardRestrictions = () => {
             if (isKeyboardVisible) return;
 
@@ -1100,6 +1141,9 @@
                   const viewportHeight = window.visualViewport.height;
                   chatWindow.style.height = viewportHeight + 'px';
                   chatWindow.style.maxHeight = viewportHeight + 'px';
+                  
+                  // Ensure input stays above keyboard
+                  scrollInputIntoView();
                 }
               };
 
@@ -1183,12 +1227,19 @@
 
           input.addEventListener('focus', function (e) {
             initialViewportHeight = window.innerHeight;
+            
+            // Scroll input into view immediately
+            scrollInputIntoView();
 
             setTimeout(() => {
               if (document.activeElement === input && window.visualViewport) {
                 const currentHeight = window.visualViewport.height;
                 if (currentHeight < initialViewportHeight * 0.75) {
                   applyKeyboardRestrictions();
+                  // Scroll again after keyboard appears
+                  setTimeout(() => {
+                    scrollInputIntoView();
+                  }, 350);
                 }
               }
             }, 200);
@@ -1215,6 +1266,10 @@
 
                 if (currentViewportHeight < lastViewportHeight && isInputFocused) {
                   applyKeyboardRestrictions();
+                  // Ensure input stays above keyboard when viewport resizes
+                  setTimeout(() => {
+                    scrollInputIntoView();
+                  }, 100);
                 }
 
                 if (currentViewportHeight > lastViewportHeight && !isInputFocused && isKeyboardVisible) {
@@ -1228,6 +1283,10 @@
 
           input.addEventListener('touchstart', function (e) {
             e.stopPropagation();
+            // Scroll input into view on touch
+            setTimeout(() => {
+              scrollInputIntoView();
+            }, 50);
           });
 
           const inputWrapper = input.closest('.chatbot-input-wrapper');
