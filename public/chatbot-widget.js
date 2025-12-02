@@ -605,11 +605,19 @@
       chatWindow.classList.add('active');
       if (overlay) overlay.classList.add('active');
       toggle.style.display = 'none';
+      // Disable body scroll on mobile only
+      if (isMobileDevice()) {
+        disableBodyScroll();
+      }
       scrollToBottom();
     } else {
       chatWindow.classList.remove('active');
       if (overlay) overlay.classList.remove('active');
       toggle.style.display = 'flex';
+      // Enable body scroll on mobile only
+      if (isMobileDevice()) {
+        enableBodyScroll();
+      }
     }
   }
 
@@ -1018,6 +1026,15 @@
         toggle.addEventListener('click', toggleChat);
       }
       if (close) close.addEventListener('click', toggleChat);
+      
+      // On mobile, clicking overlay closes the chatbot
+      if (overlay) {
+        overlay.addEventListener('click', function(e) {
+          if (isMobileDevice() && isOpen && e.target === overlay) {
+            toggleChat();
+          }
+        });
+      }
       if (send) send.addEventListener('click', handleUserInput);
       if (input) {
         input.addEventListener('input', function () {
@@ -1594,7 +1611,8 @@
       @media (max-width: 480px) {
         .chatbot-overlay.active {
           display: block;
-          pointer-events: none;
+          pointer-events: auto;
+          background: rgba(0, 0, 0, 0.3);
         }
 
         .chatbot-popup {
